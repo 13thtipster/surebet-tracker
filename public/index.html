@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#0a0a0a" />
+<title>13th Tracker — Surebet & Valuebet</title>
+<link rel="manifest" href="manifest.json" />
+<link rel="icon" href="icon-192.png" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="13th Tracker" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800;900&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0a0a0a;
+    --bg-elev: #131313;
+    --bg-card: #161616;
+    --line: #2a2a2a;
+    --yellow: #FFD600;
+    --yellow-dim: #4d4200;
+    --blue: #4DA6FF;
+    --blue-dim: #1d3a52;
+    --green: #3DDC84;
+    --red: #FF4C4C;
+    --text: #F2F2F2;
+    --text-dim: #9A9A9A;
+    --radius: 10px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Barlow', sans-serif;
+    -webkit-font-smoothing:antialiased;
+    overscroll-behavior:none;
+  }
+  h1,h2,h3,.display{
+    font-family:'Barlow Condensed', sans-serif;
+    font-weight:800;
+    letter-spacing:0.02em;
+    text-transform:uppercase;
+  }
+  #app{max-width:1100px; margin:0 auto; padding-bottom:90px;}
+
+  /* ---------- HEADER ---------- */
+  header{
+    position:sticky; top:0; z-index:20;
+    background:linear-gradient(180deg, #0a0a0a 80%, rgba(10,10,10,0));
+    padding:18px 20px 10px;
+    display:flex; align-items:center; justify-content:space-between;
+    border-bottom:1px solid var(--line);
+  }
+  .brand{display:flex; align-items:baseline; gap:8px;}
+  .brand .num{color:var(--yellow); font-size:26px; font-weight:900; font-family:'Barlow Condensed';}
+  .brand .name{font-size:18px; font-weight:700; letter-spacing:0.03em;}
+  .brand .sub{font-size:10px; color:var(--text-dim); letter-spacing:0.15em; text-transform:uppercase; margin-left:4px;}
+  .cassa-pill{
+    background:var(--bg-card); border:1px solid var(--line); border-radius:30px;
+    padding:8px 16px; text-align:right; min-width:120px;
+  }
+  .cassa-pill .lbl{font-size:9px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.1em;}
+  .cassa-pill .val{font-family:'Barlow Condensed'; font-weight:800; font-size:18px; color:var(--yellow);}
+
+  /* ---------- TABS ---------- */
+  nav.tabs{
+    display:flex; gap:4px; padding:14px 20px 0; overflow-x:auto;
+  }
+  nav.tabs button{
+    background:none; border:none; color:var(--text-dim);
+    font-family:'Barlow Condensed'; font-weight:700; font-size:13px;
+    text-transform:uppercase; letter-spacing:0.05em;
+    padding:10px 14px; border-bottom:3px solid transparent;
+    cursor:pointer; white-space:nowrap;
+  }
+  nav.tabs button.active{color:var(--yellow); border-bottom-color:var(--yellow);}
+
+  main{padding:18px 20px;}
+  section{display:none;}
+  section.active{display:block;}
+
+  /* ---------- DASHBOARD ---------- */
+  .grid-stats{
+    display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:18px;
+  }
+  @media(max-width:700px){.grid-stats{grid-template-columns:repeat(2,1fr);}}
+  .stat{
+    background:var(--bg-card); border:1px solid var(--line); border-radius:var(--radius);
+    padding:14px 16px;
+  }
+  .stat .lbl{font-size:10px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:6px;}
+  .stat .val{font-family:'Barlow Condensed'; font-weight:800; font-size:24px;}
+  .stat .val.green{color:var(--green);}
+  .stat .val.red{color:var(--red);}
+  .stat .val.yellow{color:var(--yellow);}
+  .stat .val.blue{color:var(--blue);}
+
+  .panel{
+    background:var(--bg-card); border:1px solid var(--line); border-radius:var(--radius);
+    padding:18px; margin-bottom:16px;
+  }
+  .panel h3{font-size:14px; color:var(--yellow); margin-bottom:14px; display:flex; align-items:center; gap:8px;}
+  .panel h3 .bar{width:4px; height:16px; background:var(--yellow); display:inline-block;}
+  .panel h3.blue-bar .bar{background:var(--blue);}
+  .panel h3.blue-bar{color:var(--blue);}
+
+  /* ---------- SPLIT CASSA (dashboard) ---------- */
+  .split-cassa{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:18px;}
+  @media(max-width:700px){.split-cassa{grid-template-columns:1fr;}}
+  .split-card{
+    border-radius:var(--radius); padding:16px; border:1px solid var(--line);
+  }
+  .split-card.surebet{background:linear-gradient(135deg, rgba(255,214,0,0.07), var(--bg-card));}
+  .split-card.valuebet{background:linear-gradient(135deg, rgba(77,166,255,0.07), var(--bg-card));}
+  .split-card .head{display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;}
+  .split-card .head .tt{font-family:'Barlow Condensed'; font-weight:800; font-size:14px; text-transform:uppercase; letter-spacing:0.05em;}
+  .split-card.surebet .head .tt{color:var(--yellow);}
+  .split-card.valuebet .head .tt{color:var(--blue);}
+  .split-card .row{display:flex; justify-content:space-between; padding:5px 0; font-size:13px;}
+  .split-card .row .k{color:var(--text-dim);}
+  .split-card .row .v{font-weight:700; font-family:'Barlow Condensed'; font-size:15px;}
+
+  /* ---------- TYPE SELECTOR (Nuova Giocata) ---------- */
+  .type-switch{display:flex; gap:8px; margin-bottom:18px;}
+  .type-switch button{
+    flex:1; padding:14px; border-radius:var(--radius); border:1px solid var(--line);
+    background:var(--bg-elev); color:var(--text-dim); cursor:pointer;
+    font-family:'Barlow Condensed'; font-weight:800; text-transform:uppercase; letter-spacing:0.05em; font-size:14px;
+    transition:all .15s ease;
+  }
+  .type-switch button.active.surebet{background:rgba(255,214,0,0.12); border-color:var(--yellow); color:var(--yellow);}
+  .type-switch button.active.valuebet{background:rgba(77,166,255,0.12); border-color:var(--blue); color:var(--blue);}
+
+  /* ---------- FORM ---------- */
+  .form-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:12px;}
+  @media(max-width:600px){.form-grid{grid-template-columns:1fr;}}
+  .field{display:flex; flex-direction:column; gap:6px;}
+  .field.full{grid-column:span 2;}
+  @media(max-width:600px){.field.full{grid-column:span 1;}}
+  .field label{font-size:11px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.06em;}
+  .field input, .field select{
+    background:var(--bg-elev); border:1px solid var(--line); border-radius:6px;
+    color:var(--text); padding:10px 12px; font-size:15px; font-family:'Barlow'; font-weight:500;
+  }
+  .field input:focus, .field select:focus{outline:none; border-color:var(--yellow);}
+
+  .btn{
+    font-family:'Barlow Condensed'; font-weight:800; text-transform:uppercase; letter-spacing:0.05em;
+    border:none; border-radius:6px; padding:12px 20px; cursor:pointer; font-size:14px;
+  }
+  .btn-primary{background:var(--yellow); color:#0a0a0a;}
+  .btn-primary:hover{background:#ffe14d;}
+  .btn-primary.blue{background:var(--blue); color:#06141f;}
+  .btn-primary.blue:hover{background:#6fb8ff;}
+  .btn-ghost{background:transparent; border:1px solid var(--line); color:var(--text-dim);}
+  .btn-ghost:hover{border-color:var(--yellow); color:var(--yellow);}
+  .btn-danger{background:transparent; border:1px solid var(--red); color:var(--red);}
+  .btn-row{display:flex; gap:10px; margin-top:16px; flex-wrap:wrap;}
+
+  /* ---------- PREVIEW CALCOLO ---------- */
+  .preview{
+    margin-top:16px; padding:16px; border-radius:var(--radius);
+    background:var(--bg-elev); border:1px dashed var(--line);
+  }
+  .preview-row{display:flex; justify-content:space-between; padding:6px 0; font-size:14px; border-bottom:1px solid #1f1f1f;}
+  .preview-row:last-child{border-bottom:none;}
+  .preview-row .k{color:var(--text-dim);}
+  .preview-row .v{font-weight:700; font-family:'Barlow Condensed'; font-size:16px;}
+  .preview-row .v.green{color:var(--green);}
+  .preview-row .v.red{color:var(--red);}
+  .preview-row .v.yellow{color:var(--yellow);}
+  .preview-row .v.blue{color:var(--blue);}
+
+  /* ---------- STORICO TABLE ---------- */
+  .table-wrap{overflow-x:auto;}
+  table{width:100%; border-collapse:collapse; font-size:13px;}
+  thead th{
+    text-align:left; padding:10px 8px; color:var(--text-dim); font-size:10px;
+    text-transform:uppercase; letter-spacing:0.05em; border-bottom:1px solid var(--line);
+    white-space:nowrap;
+  }
+  tbody td{padding:10px 8px; border-bottom:1px solid #1c1c1c; white-space:nowrap;}
+  tbody tr:hover{background:#1a1a1a;}
+  .tag{
+    display:inline-block; padding:3px 8px; border-radius:4px; font-size:10px; font-weight:800;
+    text-transform:uppercase; letter-spacing:0.03em;
+  }
+  .tag.win{background:rgba(61,220,132,0.15); color:var(--green);}
+  .tag.loss{background:rgba(255,76,76,0.15); color:var(--red);}
+  .tag.void{background:rgba(255,214,0,0.15); color:var(--yellow);}
+  .tag.pending{background:rgba(154,154,154,0.15); color:var(--text-dim);}
+  .tag.surebet{background:rgba(255,214,0,0.12); color:var(--yellow); border:1px solid var(--yellow-dim);}
+  .tag.valuebet{background:rgba(77,166,255,0.12); color:var(--blue); border:1px solid var(--blue-dim);}
+  .row-actions{display:flex; gap:6px;}
+  .icon-btn{
+    background:none; border:1px solid var(--line); color:var(--text-dim);
+    border-radius:5px; padding:5px 9px; cursor:pointer; font-size:12px;
+  }
+  .icon-btn:hover{border-color:var(--yellow); color:var(--yellow);}
+  .empty-state{text-align:center; padding:40px 20px; color:var(--text-dim);}
+  .empty-state .big{font-size:40px; margin-bottom:10px;}
+
+  .filter-row{display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap;}
+  .filter-row button{
+    background:var(--bg-elev); border:1px solid var(--line); color:var(--text-dim);
+    border-radius:20px; padding:6px 14px; font-size:12px; font-weight:700;
+    font-family:'Barlow Condensed'; text-transform:uppercase; letter-spacing:0.04em; cursor:pointer;
+  }
+  .filter-row button.active{background:rgba(255,214,0,0.12); border-color:var(--yellow); color:var(--yellow);}
+
+  /* ---------- SETTINGS ---------- */
+  .settings-row{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:14px 0; border-bottom:1px solid var(--line);
+  }
+  .settings-row:last-child{border-bottom:none;}
+  .settings-row .lbl{font-size:14px;}
+  .settings-row .sub{font-size:11px; color:var(--text-dim); margin-top:2px;}
+  .settings-row input{
+    width:110px; text-align:right; background:var(--bg-elev); border:1px solid var(--line);
+    border-radius:6px; color:var(--yellow); padding:8px 10px; font-weight:700; font-family:'Barlow Condensed'; font-size:15px;
+  }
+
+  .toast{
+    position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--yellow); color:#0a0a0a; font-weight:700; font-family:'Barlow Condensed';
+    text-transform:uppercase; letter-spacing:0.04em; padding:12px 22px; border-radius:30px;
+    opacity:0; transition:all .25s ease; z-index:50; font-size:13px; pointer-events:none;
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+  .helper-note{font-size:11px; color:var(--text-dim); margin-top:4px; line-height:1.4;}
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:40;
+    display:none; align-items:center; justify-content:center; padding:20px;
+  }
+  .modal-overlay.show{display:flex;}
+  .modal-box{
+    background:var(--bg-card); border:1px solid var(--line); border-radius:var(--radius);
+    padding:24px; max-width:380px; width:100%;
+  }
+  .modal-box h3{margin-bottom:10px;}
+  .modal-box p{color:var(--text-dim); font-size:13px; margin-bottom:18px; line-height:1.5;}
+
+  ::-webkit-scrollbar{height:6px; width:6px;}
+  ::-webkit-scrollbar-thumb{background:var(--line); border-radius:3px;}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <header>
+    <div class="brand">
+      <span class="num">13<sup style="font-size:12px;">th</sup></span>
+      <span class="name">TRACKER</span>
+      <span class="sub">Surebet · Valuebet</span>
+    </div>
+    <div class="cassa-pill">
+      <div class="lbl">Cassa totale</div>
+      <div class="val" id="cassa-display">€ 0,00</div>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
+    <button class="tab-btn" data-tab="nuova">Nuova Giocata</button>
+    <button class="tab-btn" data-tab="storico">Storico</button>
+    <button class="tab-btn" data-tab="settings">Impostazioni</button>
+  </nav>
+
+  <main>
+
+    <!-- ================= DASHBOARD ================= -->
+    <section id="dashboard" class="active">
+      <div class="grid-stats">
+        <div class="stat">
+          <div class="lbl">Cassa Iniziale</div>
+          <div class="val" id="stat-cassa-iniziale">€ 0,00</div>
+        </div>
+        <div class="stat">
+          <div class="lbl">Profitto Totale</div>
+          <div class="val yellow" id="stat-profitto">€ 0,00</div>
+        </div>
+        <div class="stat">
+          <div class="lbl">ROI % Totale</div>
+          <div class="val" id="stat-roi">0,00%</div>
+        </div>
+        <div class="stat">
+          <div class="lbl">Win Rate Totale</div>
+          <div class="val" id="stat-winrate">—</div>
+        </div>
+      </div>
+
+      <div class="split-cassa">
+        <div class="split-card surebet">
+          <div class="head">
+            <span class="tt">Surebet</span>
+            <span class="tag surebet">Surebet</span>
+          </div>
+          <div class="row"><span class="k">Profitto</span><span class="v" id="split-sb-profitto">€ 0,00</span></div>
+          <div class="row"><span class="k">ROI %</span><span class="v" id="split-sb-roi">0,00%</span></div>
+          <div class="row"><span class="k">Giocate (V/P)</span><span class="v" id="split-sb-count">0 / 0</span></div>
+          <div class="row"><span class="k">Win Rate</span><span class="v" id="split-sb-winrate">—</span></div>
+        </div>
+        <div class="split-card valuebet">
+          <div class="head">
+            <span class="tt">Valuebet</span>
+            <span class="tag valuebet">Valuebet</span>
+          </div>
+          <div class="row"><span class="k">Profitto</span><span class="v" id="split-vb-profitto">€ 0,00</span></div>
+          <div class="row"><span class="k">ROI %</span><span class="v" id="split-vb-roi">0,00%</span></div>
+          <div class="row"><span class="k">Giocate (V/P)</span><span class="v" id="split-vb-count">0 / 0</span></div>
+          <div class="row"><span class="k">Win Rate</span><span class="v" id="split-vb-winrate">—</span></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3><span class="bar"></span>Ultime 5 Giocate</h3>
+        <div id="dashboard-recent"></div>
+      </div>
+    </section>
+
+    <!-- ================= NUOVA GIOCATA ================= -->
+    <section id="nuova">
+
+      <div class="type-switch">
+        <button id="switch-surebet" class="active surebet" data-type="surebet">Surebet</button>
+        <button id="switch-valuebet" class="valuebet" data-type="valuebet">Valuebet</button>
+      </div>
+
+      <!-- ---- FORM SUREBET ---- -->
+      <div class="panel" id="form-surebet">
+        <h3><span class="bar"></span>Dati Surebet</h3>
+        <div class="form-grid">
+          <div class="field full">
+            <label>Evento / Match</label>
+            <input type="text" id="sb-evento" placeholder="es. Sinner vs Alcaraz" />
+          </div>
+
+          <div class="field">
+            <label>Quota Back (bookmaker)</label>
+            <input type="number" step="0.01" id="sb-quota-back" placeholder="es. 2.10" />
+          </div>
+          <div class="field">
+            <label>Stake Back (€)</label>
+            <input type="number" step="0.01" id="sb-stake-back" placeholder="es. 100" />
+          </div>
+
+          <div class="field">
+            <label>Quota Lay (exchange)</label>
+            <input type="number" step="0.01" id="sb-quota-lay" placeholder="es. 2.05" />
+          </div>
+          <div class="field">
+            <label>Stake Lay (€) — manuale</label>
+            <input type="number" step="0.01" id="sb-stake-lay" placeholder="es. 100" />
+          </div>
+
+          <div class="field">
+            <label>Commissione Exchange (%)</label>
+            <input type="number" step="0.1" id="sb-commissione" value="3" />
+          </div>
+          <div class="field">
+            <label>Bookmaker / Exchange</label>
+            <input type="text" id="sb-book" placeholder="es. Bet365 / Betfair" />
+          </div>
+        </div>
+
+        <div class="preview" id="sb-preview-box">
+          <div class="preview-row"><span class="k">Liability sul Lay</span><span class="v" id="sb-pv-liability">—</span></div>
+          <div class="preview-row"><span class="k">Esposizione totale</span><span class="v" id="sb-pv-esposizione">—</span></div>
+          <div class="preview-row"><span class="k">Se vince il BACK</span><span class="v" id="sb-pv-back-win">—</span></div>
+          <div class="preview-row"><span class="k">Se vince il LAY</span><span class="v" id="sb-pv-lay-win">—</span></div>
+          <div class="preview-row"><span class="k">% Guadagno (su stake back)</span><span class="v yellow" id="sb-pv-perc">—</span></div>
+        </div>
+
+        <p class="helper-note">
+          Logica non-split: il profitto/perdita non viene equalizzato tra i due scenari. Se vince il back incassi la quota back meno il lay perso (liability); se vince il lay incassi lo stake lay meno commissione, meno lo stake back perso.
+        </p>
+
+        <div class="btn-row">
+          <button class="btn btn-ghost" id="btn-reset-surebet">Pulisci campi</button>
+          <button class="btn btn-primary" id="btn-salva-surebet">Salva Surebet in Storico</button>
+        </div>
+      </div>
+
+      <!-- ---- FORM VALUEBET ---- -->
+      <div class="panel" id="form-valuebet" style="display:none;">
+        <h3 class="blue-bar"><span class="bar"></span>Dati Valuebet</h3>
+        <div class="form-grid">
+          <div class="field full">
+            <label>Evento / Match</label>
+            <input type="text" id="vb-evento" placeholder="es. Juventus vs Napoli — Over 2.5" />
+          </div>
+
+          <div class="field">
+            <label>Quota</label>
+            <input type="number" step="0.01" id="vb-quota" placeholder="es. 1.95" />
+          </div>
+          <div class="field">
+            <label>Probabilità stimata (%)</label>
+            <input type="number" step="0.1" id="vb-prob" placeholder="es. 58" />
+          </div>
+
+          <div class="field">
+            <label>EV % (calcolato)</label>
+            <input type="text" id="vb-ev" placeholder="—" disabled />
+          </div>
+          <div class="field">
+            <label>% Stake Kelly (calcolato)</label>
+            <input type="text" id="vb-kelly" placeholder="—" disabled />
+          </div>
+
+          <div class="field">
+            <label>Stake reale puntato (€)</label>
+            <input type="number" step="0.01" id="vb-stake" placeholder="es. 50" />
+          </div>
+          <div class="field">
+            <label>Bookmaker</label>
+            <input type="text" id="vb-book" placeholder="es. Bet365" />
+          </div>
+        </div>
+
+        <div class="preview" id="vb-preview-box">
+          <div class="preview-row"><span class="k">Valore atteso (EV)</span><span class="v blue" id="vb-pv-ev">—</span></div>
+          <div class="preview-row"><span class="k">Kelly % bankroll (full Kelly)</span><span class="v blue" id="vb-pv-kelly">—</span></div>
+          <div class="preview-row"><span class="k">Se vince (con stake reale)</span><span class="v" id="vb-pv-win">—</span></div>
+          <div class="preview-row"><span class="k">Se perde (con stake reale)</span><span class="v" id="vb-pv-loss">—</span></div>
+        </div>
+
+        <p class="helper-note">
+          EV% = (probabilità stimata × quota) − 1, espresso in percentuale sullo stake. Il Kelly % è il riferimento teorico (full Kelly) calcolato su EV e quota: è solo un'indicazione, lo stake che giochi resta quello che inserisci tu manualmente.
+        </p>
+
+        <div class="btn-row">
+          <button class="btn btn-ghost" id="btn-reset-valuebet">Pulisci campi</button>
+          <button class="btn btn-primary blue" id="btn-salva-valuebet">Salva Valuebet in Storico</button>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ================= STORICO ================= -->
+    <section id="storico">
+      <div class="panel">
+        <h3><span class="bar"></span>Storico Giocate</h3>
+
+        <div class="filter-row">
+          <button class="filter-btn active" data-filter="all">Tutte</button>
+          <button class="filter-btn" data-filter="surebet">Solo Surebet</button>
+          <button class="filter-btn" data-filter="valuebet">Solo Valuebet</button>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead id="storico-head"></thead>
+            <tbody id="storico-body"></tbody>
+          </table>
+        </div>
+        <div id="storico-empty" class="empty-state" style="display:none;">
+          <div class="big">📋</div>
+          <div>Nessuna giocata salvata. Inizia da "Nuova Giocata".</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= SETTINGS ================= -->
+    <section id="settings">
+      <div class="panel">
+        <h3><span class="bar"></span>Cassa & Parametri</h3>
+        <div class="settings-row">
+          <div>
+            <div class="lbl">Cassa di partenza</div>
+            <div class="sub">Imposta o correggi la cassa iniziale totale del tracker</div>
+          </div>
+          <input type="number" step="0.01" id="set-cassa-iniziale" />
+        </div>
+        <div class="settings-row">
+          <div>
+            <div class="lbl">Commissione exchange default (%)</div>
+            <div class="sub">Valore precompilato nel form Surebet</div>
+          </div>
+          <input type="number" step="0.1" id="set-commissione-default" />
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="btn-salva-settings">Salva impostazioni</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3><span class="bar"></span>Zona Pericolosa</h3>
+        <p class="helper-note" style="margin-bottom:14px;">Azzera tutto lo storico (surebet e valuebet) e riporta la cassa al valore iniziale impostato sopra. Operazione irreversibile.</p>
+        <button class="btn btn-danger" id="btn-reset-tutto">Reset completo dati</button>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<div class="modal-overlay" id="modal-esito-surebet">
+  <div class="modal-box">
+    <h3>Imposta esito — Surebet</h3>
+    <p>Seleziona cosa è successo in questa giocata. Il calcolo del P/L e l'aggiornamento cassa avvengono automaticamente secondo la logica non-split.</p>
+    <div class="btn-row">
+      <button class="btn btn-primary" data-esito="win_back" style="flex:1;">Vince Back</button>
+      <button class="btn btn-primary" data-esito="win_lay" style="flex:1;">Vince Lay</button>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" data-esito="void" style="flex:1;">Void</button>
+      <button class="btn btn-ghost" data-esito="cancel" style="flex:1;">Annulla</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-esito-valuebet">
+  <div class="modal-box">
+    <h3>Imposta esito — Valuebet</h3>
+    <p>Seleziona l'esito reale della giocata. Il P/L viene calcolato sullo stake reale che hai inserito.</p>
+    <div class="btn-row">
+      <button class="btn btn-primary blue" data-esito="win" style="flex:1;">Vinta</button>
+      <button class="btn btn-primary blue" data-esito="loss" style="flex:1;">Persa</button>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" data-esito="void" style="flex:1;">Void</button>
+      <button class="btn btn-ghost" data-esito="cancel" style="flex:1;">Annulla</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ================= STORAGE LAYER ================= */
+const STORAGE_KEY = 'tracker_state_v2';
+const OLD_STORAGE_KEY = 'tracker_state_v1';
+
+function migrateOldState(){
+  try{
+    const raw = localStorage.getItem(OLD_STORAGE_KEY);
+    if(!raw) return null;
+    const old = JSON.parse(raw);
+    const giocate = (old.giocate || []).map(g=>{
+      if(g.tipo === 'surebet'){
+        return {
+          id:g.id, data:g.data, categoria:'surebet', evento:g.evento, book:g.book,
+          quotaBack:g.quotaBack, stakeBack:g.stakeBack, quotaLay:g.quotaLay, stakeLay:g.stakeLay,
+          commissione:g.commissione, esito:g.esito, pl:g.pl, cassaDopo:g.cassaDopo
+        };
+      }
+      // vecchie valuebet salvate con schema surebet: portiamo i dati minimi compatibili
+      return {
+        id:g.id, data:g.data, categoria:'valuebet', evento:g.evento, book:g.book,
+        quota:g.quotaBack, prob:null, ev:null, kelly:null, stake:g.stakeBack,
+        esito:g.esito === 'win_back' ? 'win' : (g.esito === 'win_lay' ? 'loss' : g.esito),
+        pl:g.pl, cassaDopo:g.cassaDopo
+      };
+    });
+    return { cassaIniziale: old.cassaIniziale, commissioneDefault: old.commissioneDefault, giocate };
+  }catch(e){ console.error('Migration error', e); return null; }
+}
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){ console.error('Storage read error', e); }
+
+  const migrated = migrateOldState();
+  if(migrated) return migrated;
+
+  return {
+    cassaIniziale: 1000,
+    commissioneDefault: 3,
+    giocate: []
+    // surebet: {id, data, categoria:'surebet', evento, book, quotaBack, stakeBack, quotaLay, stakeLay, commissione, esito, pl, cassaDopo}
+    // valuebet: {id, data, categoria:'valuebet', evento, book, quota, prob, ev, kelly, stake, esito, pl, cassaDopo}
+  };
+}
+function saveState(state){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  catch(e){ console.error('Storage write error', e); }
+}
+
+let state = loadState();
+
+/* ================= CALCOLO SUREBET (NON-SPLIT) ================= */
+function calcolaScenariSurebet({quotaBack, stakeBack, quotaLay, stakeLay, commissione}){
+  const liability = stakeLay * (quotaLay - 1);
+  const esposizione = stakeBack + liability;
+
+  const profittoBack = (stakeBack * (quotaBack - 1)) - liability;
+
+  const guadagnoLayLordo = stakeLay;
+  const commissioneApplicata = guadagnoLayLordo * (commissione/100);
+  const profittoLay = (guadagnoLayLordo - commissioneApplicata) - stakeBack;
+
+  const percGuadagnoBack = stakeBack > 0 ? (profittoBack/stakeBack)*100 : 0;
+  const percGuadagnoLay = stakeBack > 0 ? (profittoLay/stakeBack)*100 : 0;
+
+  return { liability, esposizione, profittoBack, profittoLay, percGuadagnoBack, percGuadagnoLay };
+}
+
+/* ================= CALCOLO VALUEBET ================= */
+// EV% = (prob * quota) - 1, espresso in percentuale
+// Kelly % (full kelly) = (prob*(quota-1) - (1-prob)) / (quota-1)  [frazione di bankroll, puramente informativa]
+function calcolaValuebet({quota, prob}){
+  const p = prob / 100;
+  const ev = (p * quota) - 1; // frazionario (es 0.05 = +5%)
+  const b = quota - 1;
+  let kelly = b > 0 ? ((p * b) - (1 - p)) / b : 0;
+  if(kelly < 0) kelly = 0; // niente kelly negativo, non ha senso giocare
+  return { evPerc: ev * 100, kellyPerc: kelly * 100 };
+}
+
+/* ================= FORMAT HELPERS ================= */
+function fmtEuro(n){
+  const sign = n < 0 ? '-' : '';
+  return sign + '€ ' + Math.abs(n).toLocaleString('it-IT', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+function fmtPerc(n){
+  return n.toLocaleString('it-IT', {minimumFractionDigits:2, maximumFractionDigits:2}) + '%';
+}
+function fmtData(iso){
+  const d = new Date(iso);
+  return d.toLocaleDateString('it-IT', {day:'2-digit', month:'2-digit', year:'2-digit'}) + ' ' + d.toLocaleTimeString('it-IT', {hour:'2-digit', minute:'2-digit'});
+}
+
+/* ================= TOAST ================= */
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2200);
+}
+
+/* ================= TABS ================= */
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('main section').forEach(s=>s.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.tab).classList.add('active');
+    if(btn.dataset.tab === 'dashboard') renderDashboard();
+    if(btn.dataset.tab === 'storico') renderStorico();
+    if(btn.dataset.tab === 'settings') renderSettings();
+  });
+});
+
+/* ================= TYPE SWITCH (Nuova Giocata) ================= */
+document.getElementById('switch-surebet').addEventListener('click', ()=>{
+  document.getElementById('switch-surebet').classList.add('active');
+  document.getElementById('switch-valuebet').classList.remove('active');
+  document.getElementById('form-surebet').style.display = 'block';
+  document.getElementById('form-valuebet').style.display = 'none';
+});
+document.getElementById('switch-valuebet').addEventListener('click', ()=>{
+  document.getElementById('switch-valuebet').classList.add('active');
+  document.getElementById('switch-surebet').classList.remove('active');
+  document.getElementById('form-valuebet').style.display = 'block';
+  document.getElementById('form-surebet').style.display = 'none';
+});
+
+/* ================= CASSA CORRENTE (TOTALE) ================= */
+function getCassaCorrente(){
+  if(state.giocate.length === 0) return state.cassaIniziale;
+  const ultima = state.giocate[state.giocate.length - 1];
+  return ultima.cassaDopo;
+}
+function updateCassaDisplay(){
+  document.getElementById('cassa-display').textContent = fmtEuro(getCassaCorrente());
+}
+
+/* ================= LIVE PREVIEW — SUREBET ================= */
+const sbFormIds = ['sb-quota-back','sb-stake-back','sb-quota-lay','sb-stake-lay','sb-commissione'];
+sbFormIds.forEach(id=>{
+  document.getElementById(id).addEventListener('input', updatePreviewSurebet);
+});
+
+function readSurebetNumbers(){
+  return {
+    quotaBack: parseFloat(document.getElementById('sb-quota-back').value) || 0,
+    stakeBack: parseFloat(document.getElementById('sb-stake-back').value) || 0,
+    quotaLay: parseFloat(document.getElementById('sb-quota-lay').value) || 0,
+    stakeLay: parseFloat(document.getElementById('sb-stake-lay').value) || 0,
+    commissione: parseFloat(document.getElementById('sb-commissione').value) || 0,
+  };
+}
+
+function updatePreviewSurebet(){
+  const vals = readSurebetNumbers();
+  if(vals.stakeBack <= 0 || vals.quotaLay <= 0){
+    ['sb-pv-liability','sb-pv-esposizione','sb-pv-back-win','sb-pv-lay-win','sb-pv-perc'].forEach(id=>{
+      document.getElementById(id).textContent = '—';
+    });
+    return;
+  }
+  const r = calcolaScenariSurebet(vals);
+  document.getElementById('sb-pv-liability').textContent = fmtEuro(r.liability);
+  document.getElementById('sb-pv-esposizione').textContent = fmtEuro(r.esposizione);
+
+  const backEl = document.getElementById('sb-pv-back-win');
+  backEl.textContent = fmtEuro(r.profittoBack) + ' (' + fmtPerc(r.percGuadagnoBack) + ')';
+  backEl.className = 'v ' + (r.profittoBack >= 0 ? 'green' : 'red');
+
+  const layEl = document.getElementById('sb-pv-lay-win');
+  layEl.textContent = fmtEuro(r.profittoLay) + ' (' + fmtPerc(r.percGuadagnoLay) + ')';
+  layEl.className = 'v ' + (r.profittoLay >= 0 ? 'green' : 'red');
+
+  document.getElementById('sb-pv-perc').textContent = fmtPerc(r.percGuadagnoBack);
+}
+
+/* ================= LIVE PREVIEW — VALUEBET ================= */
+const vbFormIds = ['vb-quota','vb-prob','vb-stake'];
+vbFormIds.forEach(id=>{
+  document.getElementById(id).addEventListener('input', updatePreviewValuebet);
+});
+
+function readValuebetNumbers(){
+  return {
+    quota: parseFloat(document.getElementById('vb-quota').value) || 0,
+    prob: parseFloat(document.getElementById('vb-prob').value) || 0,
+    stake: parseFloat(document.getElementById('vb-stake').value) || 0,
+  };
+}
+
+function updatePreviewValuebet(){
+  const vals = readValuebetNumbers();
+  if(vals.quota <= 0 || vals.prob <= 0){
+    document.getElementById('vb-ev').value = '';
+    document.getElementById('vb-kelly').value = '';
+    ['vb-pv-ev','vb-pv-kelly','vb-pv-win','vb-pv-loss'].forEach(id=>{
+      document.getElementById(id).textContent = '—';
+    });
+    return;
+  }
+  const r = calcolaValuebet(vals);
+
+  document.getElementById('vb-ev').value = fmtPerc(r.evPerc);
+  document.getElementById('vb-kelly').value = fmtPerc(r.kellyPerc);
+
+  const evEl = document.getElementById('vb-pv-ev');
+  evEl.textContent = fmtPerc(r.evPerc);
+  evEl.className = 'v ' + (r.evPerc >= 0 ? 'green' : 'red');
+
+  document.getElementById('vb-pv-kelly').textContent = fmtPerc(r.kellyPerc);
+
+  if(vals.stake > 0){
+    const profittoWin = vals.stake * (vals.quota - 1);
+    const profittoLoss = -vals.stake;
+    const winEl = document.getElementById('vb-pv-win');
+    winEl.textContent = fmtEuro(profittoWin);
+    winEl.className = 'v green';
+    const lossEl = document.getElementById('vb-pv-loss');
+    lossEl.textContent = fmtEuro(profittoLoss);
+    lossEl.className = 'v red';
+  } else {
+    document.getElementById('vb-pv-win').textContent = '—';
+    document.getElementById('vb-pv-loss').textContent = '—';
+  }
+}
+
+/* ================= RESET FORM BUTTONS ================= */
+document.getElementById('btn-reset-surebet').addEventListener('click', ()=>{
+  ['sb-evento','sb-quota-back','sb-stake-back','sb-quota-lay','sb-stake-lay','sb-book'].forEach(id=>{
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('sb-commissione').value = state.commissioneDefault;
+  updatePreviewSurebet();
+});
+
+document.getElementById('btn-reset-valuebet').addEventListener('click', ()=>{
+  ['vb-evento','vb-quota','vb-prob','vb-stake','vb-book'].forEach(id=>{
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('vb-ev').value = '';
+  document.getElementById('vb-kelly').value = '';
+  updatePreviewValuebet();
+});
+
+/* ================= SALVA SUREBET ================= */
+document.getElementById('btn-salva-surebet').addEventListener('click', ()=>{
+  const vals = readSurebetNumbers();
+  const evento = document.getElementById('sb-evento').value.trim();
+  const book = document.getElementById('sb-book').value.trim();
+
+  if(!evento){ showToast('⚠ Inserisci il nome evento'); return; }
+  if(vals.stakeBack <= 0 || vals.quotaBack <= 0 || vals.quotaLay <= 0 || vals.stakeLay <= 0){
+    showToast('⚠ Compila tutti i campi quote/stake'); return;
+  }
+
+  const giocata = {
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2,7),
+    data: new Date().toISOString(),
+    categoria: 'surebet',
+    evento, book,
+    quotaBack: vals.quotaBack, stakeBack: vals.stakeBack,
+    quotaLay: vals.quotaLay, stakeLay: vals.stakeLay,
+    commissione: vals.commissione,
+    esito: 'pending',
+    pl: 0,
+    cassaDopo: getCassaCorrente()
+  };
+
+  state.giocate.push(giocata);
+  saveState(state);
+  updateCassaDisplay();
+  showToast('✓ Surebet salvata come Pending');
+
+  ['sb-evento','sb-quota-back','sb-stake-back','sb-quota-lay','sb-stake-lay','sb-book'].forEach(id=>{
+    document.getElementById(id).value = '';
+  });
+  updatePreviewSurebet();
+
+  document.querySelector('.tab-btn[data-tab="storico"]').click();
+});
+
+/* ================= SALVA VALUEBET ================= */
+document.getElementById('btn-salva-valuebet').addEventListener('click', ()=>{
+  const vals = readValuebetNumbers();
+  const evento = document.getElementById('vb-evento').value.trim();
+  const book = document.getElementById('vb-book').value.trim();
+
+  if(!evento){ showToast('⚠ Inserisci il nome evento'); return; }
+  if(vals.quota <= 0 || vals.prob <= 0 || vals.stake <= 0){
+    showToast('⚠ Compila quota, probabilità e stake'); return;
+  }
+
+  const r = calcolaValuebet(vals);
+
+  const giocata = {
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2,7),
+    data: new Date().toISOString(),
+    categoria: 'valuebet',
+    evento, book,
+    quota: vals.quota,
+    prob: vals.prob,
+    ev: r.evPerc,
+    kelly: r.kellyPerc,
+    stake: vals.stake,
+    esito: 'pending',
+    pl: 0,
+    cassaDopo: getCassaCorrente()
+  };
+
+  state.giocate.push(giocata);
+  saveState(state);
+  updateCassaDisplay();
+  showToast('✓ Valuebet salvata come Pending');
+
+  ['vb-evento','vb-quota','vb-prob','vb-stake','vb-book'].forEach(id=>{
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('vb-ev').value = '';
+  document.getElementById('vb-kelly').value = '';
+  updatePreviewValuebet();
+
+  document.querySelector('.tab-btn[data-tab="storico"]').click();
+});
+
+/* ================= STORICO ================= */
+let esitoTargetId = null;
+let storicoFilter = 'all';
+
+document.querySelectorAll('.filter-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    storicoFilter = btn.dataset.filter;
+    renderStorico();
+  });
+});
+
+function renderStoricoHead(){
+  const head = document.getElementById('storico-head');
+  if(storicoFilter === 'valuebet'){
+    head.innerHTML = `
+      <tr>
+        <th>Data</th><th>Evento</th><th>Quota</th><th>Prob %</th><th>EV %</th>
+        <th>Kelly %</th><th>Stake</th><th>Esito</th><th>P/L</th><th>Cassa dopo</th><th></th>
+      </tr>`;
+  } else if(storicoFilter === 'surebet'){
+    head.innerHTML = `
+      <tr>
+        <th>Data</th><th>Evento</th><th>Q. Back</th><th>Stake Back</th><th>Q. Lay</th>
+        <th>Stake Lay</th><th>Esito</th><th>P/L</th><th>Cassa dopo</th><th></th>
+      </tr>`;
+  } else {
+    head.innerHTML = `
+      <tr>
+        <th>Data</th><th>Tipo</th><th>Evento</th><th>Dettagli</th><th>Esito</th><th>P/L</th><th>Cassa dopo</th><th></th>
+      </tr>`;
+  }
+}
+
+function renderStorico(){
+  renderStoricoHead();
+  const body = document.getElementById('storico-body');
+  const empty = document.getElementById('storico-empty');
+  body.innerHTML = '';
+
+  let lista = [...state.giocate].reverse();
+  if(storicoFilter !== 'all') lista = lista.filter(g=>g.categoria === storicoFilter);
+
+  if(lista.length === 0){
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  lista.forEach(g=>{
+    const tr = document.createElement('tr');
+    const isSurebet = g.categoria === 'surebet';
+
+    let esitoTag = '<span class="tag pending">Pending</span>';
+    if(isSurebet){
+      if(g.esito === 'win_back' || g.esito === 'win_lay') esitoTag = '<span class="tag win">Vinta</span>';
+      if(g.esito === 'void') esitoTag = '<span class="tag void">Void</span>';
+    } else {
+      if(g.esito === 'win') esitoTag = '<span class="tag win">Vinta</span>';
+      if(g.esito === 'loss') esitoTag = '<span class="tag loss">Persa</span>';
+      if(g.esito === 'void') esitoTag = '<span class="tag void">Void</span>';
+    }
+
+    const plClass = g.pl > 0 ? 'green' : (g.pl < 0 ? 'red' : '');
+    const plColorVar = plClass === 'green' ? 'var(--green)' : (plClass === 'red' ? 'var(--red)' : 'var(--text)');
+    const plDisplay = g.esito === 'pending' ? '—' : `<span style="color:${plColorVar}">${fmtEuro(g.pl)}</span>`;
+
+    const esitoBtn = g.esito === 'pending' ? `<button class="icon-btn" data-action="esito" data-id="${g.id}">Esito</button>` : '';
+    const delBtn = `<button class="icon-btn" data-action="delete" data-id="${g.id}">✕</button>`;
+
+    if(storicoFilter === 'valuebet'){
+      tr.innerHTML = `
+        <td>${fmtData(g.data)}</td>
+        <td>${g.evento}${g.book ? `<div class="helper-note">${g.book}</div>` : ''}</td>
+        <td>${g.quota.toFixed(2)}</td>
+        <td>${g.prob.toFixed(1)}%</td>
+        <td>${fmtPerc(g.ev)}</td>
+        <td>${fmtPerc(g.kelly)}</td>
+        <td>${fmtEuro(g.stake)}</td>
+        <td>${esitoTag}</td>
+        <td>${plDisplay}</td>
+        <td>${fmtEuro(g.cassaDopo)}</td>
+        <td><div class="row-actions">${esitoBtn}${delBtn}</div></td>
+      `;
+    } else if(storicoFilter === 'surebet'){
+      tr.innerHTML = `
+        <td>${fmtData(g.data)}</td>
+        <td>${g.evento}${g.book ? `<div class="helper-note">${g.book}</div>` : ''}</td>
+        <td>${g.quotaBack.toFixed(2)}</td>
+        <td>${fmtEuro(g.stakeBack)}</td>
+        <td>${g.quotaLay.toFixed(2)}</td>
+        <td>${fmtEuro(g.stakeLay)}</td>
+        <td>${esitoTag}</td>
+        <td>${plDisplay}</td>
+        <td>${fmtEuro(g.cassaDopo)}</td>
+        <td><div class="row-actions">${esitoBtn}${delBtn}</div></td>
+      `;
+    } else {
+      const tipoTag = isSurebet ? '<span class="tag surebet">Surebet</span>' : '<span class="tag valuebet">Valuebet</span>';
+      const dettagli = isSurebet
+        ? `Back ${g.quotaBack.toFixed(2)} / Lay ${g.quotaLay.toFixed(2)}`
+        : `Quota ${g.quota.toFixed(2)} · EV ${fmtPerc(g.ev)}`;
+      tr.innerHTML = `
+        <td>${fmtData(g.data)}</td>
+        <td>${tipoTag}</td>
+        <td>${g.evento}${g.book ? `<div class="helper-note">${g.book}</div>` : ''}</td>
+        <td>${dettagli}</td>
+        <td>${esitoTag}</td>
+        <td>${plDisplay}</td>
+        <td>${fmtEuro(g.cassaDopo)}</td>
+        <td><div class="row-actions">${esitoBtn}${delBtn}</div></td>
+      `;
+    }
+    body.appendChild(tr);
+  });
+
+  body.querySelectorAll('[data-action="esito"]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      esitoTargetId = btn.dataset.id;
+      const giocata = state.giocate.find(g=>g.id === esitoTargetId);
+      if(!giocata) return;
+      const modalId = giocata.categoria === 'surebet' ? 'modal-esito-surebet' : 'modal-esito-valuebet';
+      document.getElementById(modalId).classList.add('show');
+    });
+  });
+  body.querySelectorAll('[data-action="delete"]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      if(confirm('Eliminare questa giocata? La cassa delle giocate successive verrà ricalcolata.')){
+        deleteGiocata(btn.dataset.id);
+      }
+    });
+  });
+}
+
+function deleteGiocata(id){
+  state.giocate = state.giocate.filter(g=>g.id !== id);
+  recalcolaCassaProgressiva();
+  saveState(state);
+  renderStorico();
+  updateCassaDisplay();
+  showToast('Giocata eliminata');
+}
+
+function recalcolaCassaProgressiva(){
+  let cassa = state.cassaIniziale;
+  state.giocate.forEach(g=>{
+    cassa += g.pl;
+    g.cassaDopo = cassa;
+  });
+}
+
+/* ================= MODAL ESITO — SUREBET ================= */
+document.querySelectorAll('#modal-esito-surebet [data-esito]').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const azione = btn.dataset.esito;
+    document.getElementById('modal-esito-surebet').classList.remove('show');
+    if(azione === 'cancel' || !esitoTargetId) { esitoTargetId = null; return; }
+
+    const giocata = state.giocate.find(g=>g.id === esitoTargetId);
+    if(!giocata){ esitoTargetId = null; return; }
+
+    const r = calcolaScenariSurebet(giocata);
+
+    if(azione === 'win_back'){
+      giocata.esito = 'win_back';
+      giocata.pl = r.profittoBack;
+    } else if(azione === 'win_lay'){
+      giocata.esito = 'win_lay';
+      giocata.pl = r.profittoLay;
+    } else if(azione === 'void'){
+      giocata.esito = 'void';
+      giocata.pl = 0;
+    }
+
+    recalcolaCassaProgressiva();
+    saveState(state);
+    renderStorico();
+    updateCassaDisplay();
+    showToast('✓ Esito registrato');
+    esitoTargetId = null;
+  });
+});
+
+/* ================= MODAL ESITO — VALUEBET ================= */
+document.querySelectorAll('#modal-esito-valuebet [data-esito]').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const azione = btn.dataset.esito;
+    document.getElementById('modal-esito-valuebet').classList.remove('show');
+    if(azione === 'cancel' || !esitoTargetId) { esitoTargetId = null; return; }
+
+    const giocata = state.giocate.find(g=>g.id === esitoTargetId);
+    if(!giocata){ esitoTargetId = null; return; }
+
+    if(azione === 'win'){
+      giocata.esito = 'win';
+      giocata.pl = giocata.stake * (giocata.quota - 1);
+    } else if(azione === 'loss'){
+      giocata.esito = 'loss';
+      giocata.pl = -giocata.stake;
+    } else if(azione === 'void'){
+      giocata.esito = 'void';
+      giocata.pl = 0;
+    }
+
+    recalcolaCassaProgressiva();
+    saveState(state);
+    renderStorico();
+    updateCassaDisplay();
+    showToast('✓ Esito registrato');
+    esitoTargetId = null;
+  });
+});
+
+/* ================= SETTINGS ================= */
+function renderSettings(){
+  document.getElementById('set-cassa-iniziale').value = state.cassaIniziale;
+  document.getElementById('set-commissione-default').value = state.commissioneDefault;
+}
+
+document.getElementById('btn-salva-settings').addEventListener('click', ()=>{
+  const nuovaCassa = parseFloat(document.getElementById('set-cassa-iniziale').value);
+  const nuovaComm = parseFloat(document.getElementById('set-commissione-default').value);
+
+  if(!isNaN(nuovaCassa)) state.cassaIniziale = nuovaCassa;
+  if(!isNaN(nuovaComm)) state.commissioneDefault = nuovaComm;
+
+  recalcolaCassaProgressiva();
+  saveState(state);
+  updateCassaDisplay();
+  showToast('✓ Impostazioni salvate');
+});
+
+document.getElementById('btn-reset-tutto').addEventListener('click', ()=>{
+  if(confirm('Sei sicuro? Tutto lo storico verrà eliminato definitivamente.')){
+    const cassaIniziale = state.cassaIniziale;
+    const commissioneDefault = state.commissioneDefault;
+    state = { cassaIniziale, commissioneDefault, giocate: [] };
+    saveState(state);
+    updateCassaDisplay();
+    renderStorico();
+    renderDashboard();
+    showToast('Dati azzerati');
+  }
+});
+
+/* ================= DASHBOARD ================= */
+function calcolaStatsCategoria(categoria){
+  const giocate = state.giocate.filter(g=>g.categoria === categoria);
+  const chiuse = giocate.filter(g=>g.esito !== 'pending' && g.esito !== 'void');
+  const vinte = chiuse.filter(g=>g.pl > 0).length;
+  const perse = chiuse.filter(g=>g.pl <= 0).length;
+  const pendingVoid = giocate.length - chiuse.length;
+  const profitto = giocate.reduce((sum,g)=> sum + (g.esito === 'pending' ? 0 : g.pl), 0);
+  const winRate = chiuse.length > 0 ? (vinte/chiuse.length)*100 : null;
+
+  // base di riferimento per ROI di categoria: somma stake "principale" investito su giocate chiuse
+  const stakeBase = giocate.reduce((sum,g)=>{
+    if(g.esito === 'pending') return sum;
+    if(categoria === 'surebet') return sum + g.stakeBack;
+    return sum + g.stake;
+  }, 0);
+  const roi = stakeBase > 0 ? (profitto/stakeBase)*100 : 0;
+
+  return { profitto, roi, vinte, perse, pendingVoid, winRate, totale: giocate.length };
+}
+
+function renderDashboard(){
+  const cassaIniziale = state.cassaIniziale;
+  const cassaAttuale = getCassaCorrente();
+  const profitto = cassaAttuale - cassaIniziale;
+  const roi = cassaIniziale > 0 ? (profitto/cassaIniziale)*100 : 0;
+
+  const chiuse = state.giocate.filter(g=>g.esito !== 'pending' && g.esito !== 'void');
+  const vinte = chiuse.filter(g=>g.pl > 0).length;
+  const winRate = chiuse.length > 0 ? (vinte/chiuse.length)*100 : null;
+
+  document.getElementById('stat-cassa-iniziale').textContent = fmtEuro(cassaIniziale);
+  const profittoEl = document.getElementById('stat-profitto');
+  profittoEl.textContent = fmtEuro(profitto);
+  profittoEl.className = 'val ' + (profitto >= 0 ? 'green' : 'red');
+
+  const roiEl = document.getElementById('stat-roi');
+  roiEl.textContent = fmtPerc(roi);
+  roiEl.className = 'val ' + (roi >= 0 ? 'green' : 'red');
+
+  document.getElementById('stat-winrate').textContent = winRate === null ? '—' : fmtPerc(winRate);
+
+  // split surebet
+  const sb = calcolaStatsCategoria('surebet');
+  document.getElementById('split-sb-profitto').textContent = fmtEuro(sb.profitto);
+  document.getElementById('split-sb-profitto').style.color = sb.profitto >= 0 ? 'var(--green)' : 'var(--red)';
+  document.getElementById('split-sb-roi').textContent = fmtPerc(sb.roi);
+  document.getElementById('split-sb-roi').style.color = sb.roi >= 0 ? 'var(--green)' : 'var(--red)';
+  document.getElementById('split-sb-count').textContent = `${sb.vinte} / ${sb.totale}`;
+  document.getElementById('split-sb-winrate').textContent = sb.winRate === null ? '—' : fmtPerc(sb.winRate);
+
+  // split valuebet
+  const vb = calcolaStatsCategoria('valuebet');
+  document.getElementById('split-vb-profitto').textContent = fmtEuro(vb.profitto);
+  document.getElementById('split-vb-profitto').style.color = vb.profitto >= 0 ? 'var(--green)' : 'var(--red)';
+  document.getElementById('split-vb-roi').textContent = fmtPerc(vb.roi);
+  document.getElementById('split-vb-roi').style.color = vb.roi >= 0 ? 'var(--green)' : 'var(--red)';
+  document.getElementById('split-vb-count').textContent = `${vb.vinte} / ${vb.totale}`;
+  document.getElementById('split-vb-winrate').textContent = vb.winRate === null ? '—' : fmtPerc(vb.winRate);
+
+  // ultime 5
+  const recentBox = document.getElementById('dashboard-recent');
+  const recenti = [...state.giocate].reverse().slice(0,5);
+  if(recenti.length === 0){
+    recentBox.innerHTML = '<div class="empty-state"><div class="big">🎯</div><div>Nessuna giocata ancora registrata.</div></div>';
+    return;
+  }
+  recentBox.innerHTML = recenti.map(g=>{
+    const plClass = g.pl > 0 ? 'green' : (g.pl < 0 ? 'red' : '');
+    const plColorVar = plClass === 'green' ? 'var(--green)' : (plClass === 'red' ? 'var(--red)' : 'var(--text-dim)');
+    const tipoTag = g.categoria === 'surebet' ? '<span class="tag surebet">Surebet</span>' : '<span class="tag valuebet">Valuebet</span>';
+    return `
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid #1c1c1c;">
+        <div>
+          <div style="font-weight:600;">${g.evento}</div>
+          <div class="helper-note">${fmtData(g.data)} · ${tipoTag}</div>
+        </div>
+        <div style="font-family:'Barlow Condensed'; font-weight:800; font-size:16px; color:${plColorVar}">
+          ${g.esito === 'pending' ? 'Pending' : fmtEuro(g.pl)}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+/* ================= INIT ================= */
+document.getElementById('sb-commissione').value = state.commissioneDefault;
+updateCassaDisplay();
+updatePreviewSurebet();
+updatePreviewValuebet();
+renderDashboard();
+
+/* ================= PWA SERVICE WORKER ================= */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch((e)=>console.error('SW registration failed', e));
+  });
+}
+</script>
+</body>
+</html>
