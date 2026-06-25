@@ -593,7 +593,7 @@
           </div>
 
           <div class="field">
-            <label>% Stake Kelly (max 5%, calcolato)</label>
+            <label>% Stake Kelly (1/4 Kelly, max 5%)</label>
             <input type="text" id="vb-kelly" placeholder="—" disabled />
           </div>
           <div class="field">
@@ -610,15 +610,16 @@
         <div class="preview" id="vb-preview-box">
           <div class="preview-row"><span class="k">Probabilità stimata (1 / quota stimata)</span><span class="v blue" id="vb-pv-prob">—</span></div>
           <div class="preview-row"><span class="k">Valore atteso (EV)</span><span class="v blue" id="vb-pv-ev">—</span></div>
-          <div class="preview-row"><span class="k">Kelly % teorico (non cappato)</span><span class="v" id="vb-pv-kelly-full">—</span></div>
-          <div class="preview-row"><span class="k">Kelly % applicato (max 5%)</span><span class="v blue" id="vb-pv-kelly">—</span></div>
+          <div class="preview-row"><span class="k">Kelly % pieno (teorico, informativo)</span><span class="v" id="vb-pv-kelly-full">—</span></div>
+          <div class="preview-row"><span class="k">1/4 Kelly (prima del tetto)</span><span class="v" id="vb-pv-kelly-frac">—</span></div>
+          <div class="preview-row"><span class="k">Stake % applicato (1/4 Kelly, max 5%)</span><span class="v blue" id="vb-pv-kelly">—</span></div>
           <div class="preview-row"><span class="k">Stake consigliato su Cassa Value</span><span class="v yellow" id="vb-pv-stake-consigliato">—</span></div>
           <div class="preview-row"><span class="k">Se vince (con stake inserito)</span><span class="v" id="vb-pv-win">—</span></div>
           <div class="preview-row"><span class="k">Se perde (con stake inserito)</span><span class="v" id="vb-pv-loss">—</span></div>
         </div>
 
         <p class="helper-note">
-          La quota stimata è la tua valutazione personale del valore equo dell'evento: da essa deriviamo la probabilità stimata (1/quota stimata). L'EV% confronta questa probabilità con la quota realmente disponibile sul book. Lo stake consigliato è calcolato con il criterio di Kelly sulla Cassa Value, con un tetto massimo del 5% per prudenza — puoi comunque modificarlo manualmente prima di salvare.
+          La quota stimata è la tua valutazione personale del valore equo dell'evento: da essa deriviamo la probabilità stimata (1/quota stimata). L'EV% confronta questa probabilità con la quota realmente disponibile sul book. Lo stake consigliato usa 1/4 del Kelly pieno calcolato (per ridurre la varianza tipica del Kelly puro su serie di puntate consecutive) ed è comunque limitato a un tetto massimo del 5% della Cassa Value. Più alto è il valore (EV), maggiore sarà lo stake suggerito, entro questo limite di prudenza — puoi comunque modificarlo manualmente prima di salvare.
         </p>
 
         <div class="btn-row">
@@ -777,24 +778,27 @@ function calcolaScenariSurebet({quotaBack, stakeBack, quotaLay, stakeLay, commis
 // quotaBook: quota reale disponibile sul bookmaker
 // quotaStimata: la "tua" valutazione della quota equa -> probabilità = 1/quotaStimata
 // EV% = (probabilità stimata * quotaBook) - 1
-// Kelly% (capped al 5%) = min(Kelly teorico, 5%)
-// stakeConsigliato = Kelly%(capped) * cassaValue
+// Stake: Kelly FRAZIONARIO (1/4 del Kelly pieno) come misura di prudenza contro la varianza
+// del Kelly puro su serie di puntate consecutive, con tetto rigido al 5% della Cassa Value.
 const KELLY_CAP_PERC = 5;
+const KELLY_FRACTION = 0.25; // 1/4 Kelly
 
 function calcolaValuebet({quotaBook, quotaStimata, cassaValue}){
   const probStimata = quotaStimata > 0 ? (1 / quotaStimata) : 0;
   const ev = (probStimata * quotaBook) - 1;
   const b = quotaBook - 1;
-  let kelly = b > 0 ? ((probStimata * b) - (1 - probStimata)) / b : 0;
-  if(kelly < 0) kelly = 0;
-  const kellyPerc = kelly * 100;
-  const kellyPercCapped = Math.min(kellyPerc, KELLY_CAP_PERC);
+  let kellyPieno = b > 0 ? ((probStimata * b) - (1 - probStimata)) / b : 0;
+  if(kellyPieno < 0) kellyPieno = 0;
+  const kellyPienoPerc = kellyPieno * 100;
+  const kellyFrazionarioPerc = kellyPienoPerc * KELLY_FRACTION;
+  const kellyPercCapped = Math.min(kellyFrazionarioPerc, KELLY_CAP_PERC);
   const stakeConsigliato = cassaValue > 0 ? (kellyPercCapped/100) * cassaValue : 0;
   return {
     probStimata: probStimata * 100,
     evPerc: ev * 100,
-    kellyPerc,
-    kellyPercCapped,
+    kellyPerc: kellyPienoPerc,           // Kelly pieno, mostrato come riferimento informativo
+    kellyFrazionarioPerc,                // 1/4 Kelly, prima del tetto
+    kellyPercCapped,                     // 1/4 Kelly DOPO il tetto 5% (quello usato per lo stake)
     stakeConsigliato
   };
 }
@@ -1277,6 +1281,7 @@ function updatePreviewValuebet(){
   evEl.className = 'v ' + (r.evPerc >= 0 ? 'green' : 'red');
 
   document.getElementById('vb-pv-kelly-full').textContent = fmtPerc(r.kellyPerc);
+  document.getElementById('vb-pv-kelly-frac').textContent = fmtPerc(r.kellyFrazionarioPerc);
   document.getElementById('vb-pv-kelly').textContent = fmtPerc(r.kellyPercCapped);
   document.getElementById('vb-pv-stake-consigliato').textContent = fmtEuro(r.stakeConsigliato) + ' (su cassa Value ' + fmtEuro(cassaValue) + ')';
 
