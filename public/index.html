@@ -374,6 +374,25 @@
 <!-- ================= LOADING SCREEN ================= -->
 <div id="loading-screen" class="auth-loading" style="display:none;">Caricamento…</div>
 
+<!-- ================= RECOVERY PASSWORD SCREEN ================= -->
+<div id="recovery-screen" style="display:none;">
+  <div id="auth-screen-recovery" class="auth-loading" style="min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px;">
+    <div class="auth-box">
+      <div class="auth-brand">
+        <span class="num">13<sup style="font-size:16px;">th</sup></span>
+        <span class="name">TRACKER</span>
+      </div>
+      <div class="auth-sub">Imposta nuova password</div>
+      <div id="recovery-msg-box"></div>
+      <div class="auth-field">
+        <label>Nuova password</label>
+        <input type="password" id="recovery-password" placeholder="••••••••" autocomplete="new-password" />
+      </div>
+      <button class="auth-submit" id="recovery-submit-btn">Salva nuova password</button>
+    </div>
+  </div>
+</div>
+
 <!-- ================= APP ================= -->
 <div id="app" style="display:none;">
 
@@ -425,9 +444,12 @@
       <div class="split-cassa">
         <div class="split-card surebet">
           <div class="head">
-            <span class="tt">Surebet</span>
+            <span class="tt">Surebet (Book + Exchange)</span>
             <span class="tag surebet">Surebet</span>
           </div>
+          <div class="row"><span class="k">Cassa Book</span><span class="v" id="split-sb-book">€ 0,00</span></div>
+          <div class="row"><span class="k">Cassa Exchange</span><span class="v" id="split-sb-exchange">€ 0,00</span></div>
+          <div class="row"><span class="k">Totale Surebet</span><span class="v yellow" id="split-sb-totale">€ 0,00</span></div>
           <div class="row"><span class="k">Profitto</span><span class="v" id="split-sb-profitto">€ 0,00</span></div>
           <div class="row"><span class="k">ROI %</span><span class="v" id="split-sb-roi">0,00%</span></div>
           <div class="row"><span class="k">Giocate (V/P)</span><span class="v" id="split-sb-count">0 / 0</span></div>
@@ -438,10 +460,24 @@
             <span class="tt">Valuebet</span>
             <span class="tag valuebet">Valuebet</span>
           </div>
+          <div class="row"><span class="k">Cassa Value</span><span class="v blue" id="split-vb-cassa">€ 0,00</span></div>
           <div class="row"><span class="k">Profitto</span><span class="v" id="split-vb-profitto">€ 0,00</span></div>
           <div class="row"><span class="k">ROI %</span><span class="v" id="split-vb-roi">0,00%</span></div>
           <div class="row"><span class="k">Giocate (V/P)</span><span class="v" id="split-vb-count">0 / 0</span></div>
           <div class="row"><span class="k">Win Rate</span><span class="v" id="split-vb-winrate">—</span></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3><span class="bar"></span>Andamento Casse nel Tempo</h3>
+        <div id="cassa-chart-wrap" style="width:100%; overflow-x:auto;">
+          <svg id="cassa-chart" width="100%" height="260" style="display:block; min-width:320px;"></svg>
+        </div>
+        <div style="display:flex; gap:16px; flex-wrap:wrap; margin-top:10px; font-size:11px; color:var(--text-dim);">
+          <span><span style="display:inline-block; width:10px; height:10px; background:var(--yellow); border-radius:50%; margin-right:5px;"></span>Generale</span>
+          <span><span style="display:inline-block; width:10px; height:10px; background:#FF8A00; border-radius:50%; margin-right:5px;"></span>Book</span>
+          <span><span style="display:inline-block; width:10px; height:10px; background:#9D4EDD; border-radius:50%; margin-right:5px;"></span>Exchange</span>
+          <span><span style="display:inline-block; width:10px; height:10px; background:var(--blue); border-radius:50%; margin-right:5px;"></span>Value</span>
         </div>
       </div>
 
@@ -524,42 +560,50 @@
           </div>
 
           <div class="field">
-            <label>Quota</label>
-            <input type="number" step="0.01" id="vb-quota" placeholder="es. 1.95" />
+            <label>Quota disponibile sul Book</label>
+            <input type="number" step="0.01" id="vb-quota-book" placeholder="es. 1.95" />
           </div>
           <div class="field">
-            <label>Probabilità stimata (%)</label>
-            <input type="number" step="0.1" id="vb-prob" placeholder="es. 58" />
+            <label>Quota stimata (la tua valutazione)</label>
+            <input type="number" step="0.01" id="vb-quota-stimata" placeholder="es. 1.85" />
           </div>
 
+          <div class="field">
+            <label>Probabilità stimata (calcolata)</label>
+            <input type="text" id="vb-prob" placeholder="—" disabled />
+          </div>
           <div class="field">
             <label>EV % (calcolato)</label>
             <input type="text" id="vb-ev" placeholder="—" disabled />
           </div>
-          <div class="field">
-            <label>% Stake Kelly (calcolato)</label>
-            <input type="text" id="vb-kelly" placeholder="—" disabled />
-          </div>
 
           <div class="field">
-            <label>Stake reale puntato (€)</label>
-            <input type="number" step="0.01" id="vb-stake" placeholder="es. 50" />
+            <label>% Stake Kelly (max 5%, calcolato)</label>
+            <input type="text" id="vb-kelly" placeholder="—" disabled />
           </div>
           <div class="field">
+            <label>Stake consigliato (€) — editabile</label>
+            <input type="number" step="0.01" id="vb-stake" placeholder="es. 50" />
+          </div>
+
+          <div class="field full">
             <label>Bookmaker</label>
             <input type="text" id="vb-book" placeholder="es. Bet365" />
           </div>
         </div>
 
         <div class="preview" id="vb-preview-box">
+          <div class="preview-row"><span class="k">Probabilità stimata (1 / quota stimata)</span><span class="v blue" id="vb-pv-prob">—</span></div>
           <div class="preview-row"><span class="k">Valore atteso (EV)</span><span class="v blue" id="vb-pv-ev">—</span></div>
-          <div class="preview-row"><span class="k">Kelly % bankroll (full Kelly)</span><span class="v blue" id="vb-pv-kelly">—</span></div>
-          <div class="preview-row"><span class="k">Se vince (con stake reale)</span><span class="v" id="vb-pv-win">—</span></div>
-          <div class="preview-row"><span class="k">Se perde (con stake reale)</span><span class="v" id="vb-pv-loss">—</span></div>
+          <div class="preview-row"><span class="k">Kelly % teorico (non cappato)</span><span class="v" id="vb-pv-kelly-full">—</span></div>
+          <div class="preview-row"><span class="k">Kelly % applicato (max 5%)</span><span class="v blue" id="vb-pv-kelly">—</span></div>
+          <div class="preview-row"><span class="k">Stake consigliato su Cassa Value</span><span class="v yellow" id="vb-pv-stake-consigliato">—</span></div>
+          <div class="preview-row"><span class="k">Se vince (con stake inserito)</span><span class="v" id="vb-pv-win">—</span></div>
+          <div class="preview-row"><span class="k">Se perde (con stake inserito)</span><span class="v" id="vb-pv-loss">—</span></div>
         </div>
 
         <p class="helper-note">
-          EV% = (probabilità stimata × quota) − 1, espresso in percentuale sullo stake. Il Kelly % è il riferimento teorico (full Kelly) calcolato su EV e quota: è solo un'indicazione, lo stake che giochi resta quello che inserisci tu manualmente.
+          La quota stimata è la tua valutazione personale del valore equo dell'evento: da essa deriviamo la probabilità stimata (1/quota stimata). L'EV% confronta questa probabilità con la quota realmente disponibile sul book. Lo stake consigliato è calcolato con il criterio di Kelly sulla Cassa Value, con un tetto massimo del 5% per prudenza — puoi comunque modificarlo manualmente prima di salvare.
         </p>
 
         <div class="btn-row">
@@ -611,6 +655,20 @@
             <div class="sub">Valore precompilato nel form Surebet</div>
           </div>
           <input type="number" step="0.1" id="set-commissione-default" />
+        </div>
+        <div class="settings-row">
+          <div>
+            <div class="lbl">% Cassa Generale → Surebet</div>
+            <div class="sub">Il resto va alla Cassa Value. Es. 60 = 60% Surebet / 40% Value</div>
+          </div>
+          <input type="number" step="1" min="0" max="100" id="set-perc-surebet" />
+        </div>
+        <div class="settings-row">
+          <div>
+            <div class="lbl">% Cassa Surebet → Book</div>
+            <div class="sub">Il resto va alla Cassa Exchange. Es. 50 = 50% Book / 50% Exchange</div>
+          </div>
+          <input type="number" step="1" min="0" max="100" id="set-perc-book" />
         </div>
         <div class="btn-row">
           <button class="btn btn-primary" id="btn-salva-settings">Salva impostazioni</button>
@@ -682,6 +740,8 @@ let currentUser = null;
 let state = {
   cassaIniziale: 1000,
   commissioneDefault: 3,
+  percSurebet: 50,   // % della Cassa Generale destinata a Surebet (resto a Value)
+  percBook: 50,      // % della Cassa Surebet destinata a Book (resto a Exchange)
   giocate: []
 };
 
@@ -699,13 +759,29 @@ function calcolaScenariSurebet({quotaBack, stakeBack, quotaLay, stakeLay, commis
 }
 
 /* ================= CALCOLO VALUEBET ================= */
-function calcolaValuebet({quota, prob}){
-  const p = prob / 100;
-  const ev = (p * quota) - 1;
-  const b = quota - 1;
-  let kelly = b > 0 ? ((p * b) - (1 - p)) / b : 0;
+// quotaBook: quota reale disponibile sul bookmaker
+// quotaStimata: la "tua" valutazione della quota equa -> probabilità = 1/quotaStimata
+// EV% = (probabilità stimata * quotaBook) - 1
+// Kelly% (capped al 5%) = min(Kelly teorico, 5%)
+// stakeConsigliato = Kelly%(capped) * cassaValue
+const KELLY_CAP_PERC = 5;
+
+function calcolaValuebet({quotaBook, quotaStimata, cassaValue}){
+  const probStimata = quotaStimata > 0 ? (1 / quotaStimata) : 0;
+  const ev = (probStimata * quotaBook) - 1;
+  const b = quotaBook - 1;
+  let kelly = b > 0 ? ((probStimata * b) - (1 - probStimata)) / b : 0;
   if(kelly < 0) kelly = 0;
-  return { evPerc: ev * 100, kellyPerc: kelly * 100 };
+  const kellyPerc = kelly * 100;
+  const kellyPercCapped = Math.min(kellyPerc, KELLY_CAP_PERC);
+  const stakeConsigliato = cassaValue > 0 ? (kellyPercCapped/100) * cassaValue : 0;
+  return {
+    probStimata: probStimata * 100,
+    evPerc: ev * 100,
+    kellyPerc,
+    kellyPercCapped,
+    stakeConsigliato
+  };
 }
 
 /* ================= FORMAT HELPERS ================= */
@@ -810,11 +886,33 @@ function traduciErroreAuth(msg){
 document.getElementById('logout-btn').addEventListener('click', doLogout);
 document.getElementById('btn-logout-2').addEventListener('click', doLogout);
 async function doLogout(){
-  await sb.auth.signOut();
+  try{
+    const { error } = await sb.auth.signOut();
+    if(error){
+      console.error('Errore signOut', error);
+      showToast('⚠ Errore durante il logout: ' + error.message, true);
+    }
+  } catch(err){
+    console.error('Errore signOut (eccezione)', err);
+  } finally {
+    // Fallback: anche se signOut o l'evento onAuthStateChange non si comportano come previsto,
+    // forziamo comunque il ritorno alla schermata di login dopo un istante.
+    setTimeout(()=>{
+      currentUser = null;
+      showAuthScreen();
+    }, 300);
+  }
 }
 
 /* ================= AUTH STATE / APP BOOTSTRAP ================= */
 sb.auth.onAuthStateChange((event, session) => {
+  if(event === 'PASSWORD_RECOVERY'){
+    document.getElementById('auth-screen').style.display = 'none';
+    document.getElementById('loading-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'none';
+    document.getElementById('recovery-screen').style.display = 'block';
+    return;
+  }
   if(session && session.user){
     currentUser = session.user;
     showApp();
@@ -824,14 +922,48 @@ sb.auth.onAuthStateChange((event, session) => {
   }
 });
 
+document.getElementById('recovery-submit-btn').addEventListener('click', async ()=>{
+  const newPassword = document.getElementById('recovery-password').value;
+  const box = document.getElementById('recovery-msg-box');
+  if(!newPassword || newPassword.length < 6){
+    box.innerHTML = '<div class="auth-msg error">La password deve avere almeno 6 caratteri.</div>';
+    return;
+  }
+  const btn = document.getElementById('recovery-submit-btn');
+  btn.disabled = true;
+  try{
+    const { error } = await sb.auth.updateUser({ password: newPassword });
+    if(error) throw error;
+    box.innerHTML = '<div class="auth-msg success">Password aggiornata! Accesso in corso…</div>';
+    setTimeout(()=>{
+      document.getElementById('recovery-screen').style.display = 'none';
+      // la sessione attiva (creata dal link di recovery) resta valida: entriamo nell'app
+      sb.auth.getSession().then(({data})=>{
+        if(data.session && data.session.user){
+          currentUser = data.session.user;
+          showApp();
+        } else {
+          showAuthScreen();
+        }
+      });
+    }, 1200);
+  } catch(err){
+    box.innerHTML = `<div class="auth-msg error">${err.message}</div>`;
+  } finally {
+    btn.disabled = false;
+  }
+});
+
 function showAuthScreen(){
   document.getElementById('loading-screen').style.display = 'none';
   document.getElementById('app').style.display = 'none';
+  document.getElementById('recovery-screen').style.display = 'none';
   document.getElementById('auth-screen').style.display = 'flex';
 }
 
 async function showApp(){
   document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('recovery-screen').style.display = 'none';
   document.getElementById('loading-screen').style.display = 'flex';
   document.getElementById('app').style.display = 'none';
 
@@ -863,14 +995,19 @@ async function loadAllData(){
     if(impostazioni){
       state.cassaIniziale = parseFloat(impostazioni.cassa_iniziale);
       state.commissioneDefault = parseFloat(impostazioni.commissione_default);
+      state.percSurebet = impostazioni.perc_surebet !== undefined && impostazioni.perc_surebet !== null ? parseFloat(impostazioni.perc_surebet) : 50;
+      state.percBook = impostazioni.perc_book !== undefined && impostazioni.perc_book !== null ? parseFloat(impostazioni.perc_book) : 50;
     } else {
       // prima volta per questo utente: creiamo la riga impostazioni di default
       const { error: insErr } = await sb.from('impostazioni').insert({
-        user_id: currentUser.id, cassa_iniziale: 1000, commissione_default: 3
+        user_id: currentUser.id, cassa_iniziale: 1000, commissione_default: 3,
+        perc_surebet: 50, perc_book: 50
       });
       if(insErr) throw insErr;
       state.cassaIniziale = 1000;
       state.commissioneDefault = 3;
+      state.percSurebet = 50;
+      state.percBook = 50;
     }
 
     const { data: giocateDb, error: gErr } = await sb
@@ -902,13 +1039,17 @@ function dbRowToGiocata(row){
     stakeLay: row.stake_lay !== null ? parseFloat(row.stake_lay) : null,
     commissione: row.commissione !== null ? parseFloat(row.commissione) : null,
     quota: row.quota !== null ? parseFloat(row.quota) : null,
+    quotaStimata: row.quota_stimata !== null ? parseFloat(row.quota_stimata) : null,
     prob: row.prob !== null ? parseFloat(row.prob) : null,
     ev: row.ev !== null ? parseFloat(row.ev) : null,
     kelly: row.kelly !== null ? parseFloat(row.kelly) : null,
     stake: row.stake !== null ? parseFloat(row.stake) : null,
     esito: row.esito,
     pl: parseFloat(row.pl),
-    cassaDopo: row.cassa_dopo !== null ? parseFloat(row.cassa_dopo) : null
+    cassaDopo: row.cassa_dopo !== null ? parseFloat(row.cassa_dopo) : null,
+    cassaBookDopo: row.cassa_book_dopo !== null ? parseFloat(row.cassa_book_dopo) : null,
+    cassaExchangeDopo: row.cassa_exchange_dopo !== null ? parseFloat(row.cassa_exchange_dopo) : null,
+    cassaValueDopo: row.cassa_value_dopo !== null ? parseFloat(row.cassa_value_dopo) : null
   };
 }
 
@@ -939,12 +1080,61 @@ document.getElementById('switch-valuebet').addEventListener('click', ()=>{
   document.getElementById('form-surebet').style.display = 'none';
 });
 
-/* ================= CASSA CORRENTE (TOTALE) ================= */
-function getCassaCorrente(){
-  if(state.giocate.length === 0) return state.cassaIniziale;
-  const ultima = state.giocate[state.giocate.length - 1];
-  return ultima.cassaDopo;
+/* ================= CASSE (GENERALE / SUREBET[BOOK+EXCHANGE] / VALUE) ================= */
+// Calcola i saldi iniziali dei 3 "rami" a partire da Cassa Generale e le due percentuali di split.
+function getSaldiIniziali(){
+  const cassaSurebetIniziale = state.cassaIniziale * (state.percSurebet/100);
+  const cassaValueIniziale = state.cassaIniziale - cassaSurebetIniziale;
+  const cassaBookIniziale = cassaSurebetIniziale * (state.percBook/100);
+  const cassaExchangeIniziale = cassaSurebetIniziale - cassaBookIniziale;
+  return {
+    book: cassaBookIniziale,
+    exchange: cassaExchangeIniziale,
+    value: cassaValueIniziale
+  };
 }
+
+// Ricalcola progressivamente i 4 saldi (book, exchange, value, generale) attraverso tutto lo storico,
+// in ordine cronologico. Ogni giocata "chiusa" applica il proprio movimento al ramo corretto.
+function calcolaCasseProgressive(){
+  const iniziali = getSaldiIniziali();
+  let book = iniziali.book;
+  let exchange = iniziali.exchange;
+  let value = iniziali.value;
+
+  const snapshots = []; // uno per ogni giocata, nell'ordine cronologico di state.giocate
+
+  state.giocate.forEach(g=>{
+    if(g.esito !== 'pending' && g.esito !== 'void'){
+      if(g.categoria === 'surebet'){
+        if(g.esito === 'win_back'){
+          const liability = g.stakeLay * (g.quotaLay - 1);
+          book += g.stakeBack * (g.quotaBack - 1);
+          exchange -= liability;
+        } else if(g.esito === 'win_lay'){
+          const guadagnoLayNetto = g.stakeLay * (1 - g.commissione/100);
+          book -= g.stakeBack;
+          exchange += guadagnoLayNetto;
+        }
+      } else if(g.categoria === 'valuebet'){
+        value += g.pl;
+      }
+    }
+    snapshots.push({
+      id: g.id,
+      book, exchange, value,
+      surebet: book + exchange,
+      generale: book + exchange + value
+    });
+  });
+
+  return { iniziali, snapshots, finale: snapshots.length ? snapshots[snapshots.length-1] : { book, exchange, value, surebet: book+exchange, generale: book+exchange+value } };
+}
+
+function getCassaCorrente(){
+  return calcolaCasseProgressive().finale.generale;
+}
+
 function updateCassaDisplay(){
   document.getElementById('cassa-display').textContent = fmtEuro(getCassaCorrente());
 }
@@ -989,43 +1179,62 @@ function updatePreviewSurebet(){
 }
 
 /* ================= LIVE PREVIEW — VALUEBET ================= */
-const vbFormIds = ['vb-quota','vb-prob','vb-stake'];
+const vbFormIds = ['vb-quota-book','vb-quota-stimata'];
 vbFormIds.forEach(id=>{
   document.getElementById(id).addEventListener('input', updatePreviewValuebet);
 });
 
 function readValuebetNumbers(){
   return {
-    quota: parseFloat(document.getElementById('vb-quota').value) || 0,
-    prob: parseFloat(document.getElementById('vb-prob').value) || 0,
+    quotaBook: parseFloat(document.getElementById('vb-quota-book').value) || 0,
+    quotaStimata: parseFloat(document.getElementById('vb-quota-stimata').value) || 0,
     stake: parseFloat(document.getElementById('vb-stake').value) || 0,
   };
 }
 
+function getCassaValueCorrente(){
+  return calcolaCasseProgressive().finale.value;
+}
+
 function updatePreviewValuebet(){
   const vals = readValuebetNumbers();
-  if(vals.quota <= 0 || vals.prob <= 0){
+  if(vals.quotaBook <= 0 || vals.quotaStimata <= 0){
+    document.getElementById('vb-prob').value = '';
     document.getElementById('vb-ev').value = '';
     document.getElementById('vb-kelly').value = '';
-    ['vb-pv-ev','vb-pv-kelly','vb-pv-win','vb-pv-loss'].forEach(id=>{
+    ['vb-pv-prob','vb-pv-ev','vb-pv-kelly-full','vb-pv-kelly','vb-pv-stake-consigliato','vb-pv-win','vb-pv-loss'].forEach(id=>{
       document.getElementById(id).textContent = '—';
     });
     return;
   }
-  const r = calcolaValuebet(vals);
 
+  const cassaValue = getCassaValueCorrente();
+  const r = calcolaValuebet({ quotaBook: vals.quotaBook, quotaStimata: vals.quotaStimata, cassaValue });
+
+  document.getElementById('vb-prob').value = fmtPerc(r.probStimata);
   document.getElementById('vb-ev').value = fmtPerc(r.evPerc);
-  document.getElementById('vb-kelly').value = fmtPerc(r.kellyPerc);
+  document.getElementById('vb-kelly').value = fmtPerc(r.kellyPercCapped);
+
+  document.getElementById('vb-pv-prob').textContent = fmtPerc(r.probStimata);
 
   const evEl = document.getElementById('vb-pv-ev');
   evEl.textContent = fmtPerc(r.evPerc);
   evEl.className = 'v ' + (r.evPerc >= 0 ? 'green' : 'red');
 
-  document.getElementById('vb-pv-kelly').textContent = fmtPerc(r.kellyPerc);
+  document.getElementById('vb-pv-kelly-full').textContent = fmtPerc(r.kellyPerc);
+  document.getElementById('vb-pv-kelly').textContent = fmtPerc(r.kellyPercCapped);
+  document.getElementById('vb-pv-stake-consigliato').textContent = fmtEuro(r.stakeConsigliato) + ' (su cassa Value ' + fmtEuro(cassaValue) + ')';
 
-  if(vals.stake > 0){
-    const profittoWin = vals.stake * (vals.quota - 1);
-    const profittoLoss = -vals.stake;
+  // Precompila lo stake se il campo è ancora vuoto o non è stato toccato manualmente
+  const stakeInput = document.getElementById('vb-stake');
+  if(!stakeInput.dataset.touched){
+    stakeInput.value = r.stakeConsigliato.toFixed(2);
+  }
+
+  const stakeAttuale = parseFloat(stakeInput.value) || 0;
+  if(stakeAttuale > 0){
+    const profittoWin = stakeAttuale * (vals.quotaBook - 1);
+    const profittoLoss = -stakeAttuale;
     const winEl = document.getElementById('vb-pv-win');
     winEl.textContent = fmtEuro(profittoWin);
     winEl.className = 'v green';
@@ -1038,6 +1247,11 @@ function updatePreviewValuebet(){
   }
 }
 
+document.getElementById('vb-stake').addEventListener('input', function(){
+  this.dataset.touched = 'true';
+  updatePreviewValuebet();
+});
+
 /* ================= RESET FORM BUTTONS ================= */
 document.getElementById('btn-reset-surebet').addEventListener('click', ()=>{
   ['sb-evento','sb-quota-back','sb-stake-back','sb-quota-lay','sb-stake-lay','sb-book'].forEach(id=>{
@@ -1048,11 +1262,13 @@ document.getElementById('btn-reset-surebet').addEventListener('click', ()=>{
 });
 
 document.getElementById('btn-reset-valuebet').addEventListener('click', ()=>{
-  ['vb-evento','vb-quota','vb-prob','vb-stake','vb-book'].forEach(id=>{
+  ['vb-evento','vb-quota-book','vb-quota-stimata','vb-stake','vb-book'].forEach(id=>{
     document.getElementById(id).value = '';
   });
+  document.getElementById('vb-prob').value = '';
   document.getElementById('vb-ev').value = '';
   document.getElementById('vb-kelly').value = '';
+  delete document.getElementById('vb-stake').dataset.touched;
   updatePreviewValuebet();
 });
 
@@ -1085,6 +1301,7 @@ document.getElementById('btn-salva-surebet').addEventListener('click', async ()=
     if(error) throw error;
 
     state.giocate.push(dbRowToGiocata(data));
+    await recalcolaCassaProgressivaERemota();
     updateCassaDisplay();
     showToast('✓ Surebet salvata come Pending');
 
@@ -1109,11 +1326,12 @@ document.getElementById('btn-salva-valuebet').addEventListener('click', async ()
   const book = document.getElementById('vb-book').value.trim();
 
   if(!evento){ showToast('⚠ Inserisci il nome evento', true); return; }
-  if(vals.quota <= 0 || vals.prob <= 0 || vals.stake <= 0){
-    showToast('⚠ Compila quota, probabilità e stake', true); return;
+  if(vals.quotaBook <= 0 || vals.quotaStimata <= 0 || vals.stake <= 0){
+    showToast('⚠ Compila quota book, quota stimata e stake', true); return;
   }
 
-  const r = calcolaValuebet(vals);
+  const cassaValue = getCassaValueCorrente();
+  const r = calcolaValuebet({ quotaBook: vals.quotaBook, quotaStimata: vals.quotaStimata, cassaValue });
   const btn = document.getElementById('btn-salva-valuebet');
   btn.disabled = true;
 
@@ -1122,7 +1340,12 @@ document.getElementById('btn-salva-valuebet').addEventListener('click', async ()
       user_id: currentUser.id,
       categoria: 'valuebet',
       evento, book,
-      quota: vals.quota, prob: vals.prob, ev: r.evPerc, kelly: r.kellyPerc, stake: vals.stake,
+      quota: vals.quotaBook,
+      quota_stimata: vals.quotaStimata,
+      prob: r.probStimata,
+      ev: r.evPerc,
+      kelly: r.kellyPercCapped,
+      stake: vals.stake,
       esito: 'pending', pl: 0,
       cassa_dopo: getCassaCorrente()
     }).select().single();
@@ -1130,14 +1353,17 @@ document.getElementById('btn-salva-valuebet').addEventListener('click', async ()
     if(error) throw error;
 
     state.giocate.push(dbRowToGiocata(data));
+    await recalcolaCassaProgressivaERemota();
     updateCassaDisplay();
     showToast('✓ Valuebet salvata come Pending');
 
-    ['vb-evento','vb-quota','vb-prob','vb-stake','vb-book'].forEach(id=>{
+    ['vb-evento','vb-quota-book','vb-quota-stimata','vb-stake','vb-book'].forEach(id=>{
       document.getElementById(id).value = '';
     });
+    document.getElementById('vb-prob').value = '';
     document.getElementById('vb-ev').value = '';
     document.getElementById('vb-kelly').value = '';
+    delete document.getElementById('vb-stake').dataset.touched;
     updatePreviewValuebet();
 
     document.querySelector('.tab-btn[data-tab="storico"]').click();
@@ -1167,19 +1393,19 @@ function renderStoricoHead(){
   if(storicoFilter === 'valuebet'){
     head.innerHTML = `
       <tr>
-        <th>Data</th><th>Evento</th><th>Quota</th><th>Prob %</th><th>EV %</th>
-        <th>Kelly %</th><th>Stake</th><th>Esito</th><th>P/L</th><th>Cassa dopo</th><th></th>
+        <th>Data</th><th>Evento</th><th>Q. Book</th><th>Q. Stimata</th><th>Prob %</th><th>EV %</th>
+        <th>Kelly %</th><th>Stake</th><th>Esito</th><th>P/L</th><th>Cassa Value dopo</th><th></th>
       </tr>`;
   } else if(storicoFilter === 'surebet'){
     head.innerHTML = `
       <tr>
         <th>Data</th><th>Evento</th><th>Q. Back</th><th>Stake Back</th><th>Q. Lay</th>
-        <th>Stake Lay</th><th>Esito</th><th>P/L</th><th>Cassa dopo</th><th></th>
+        <th>Stake Lay</th><th>Esito</th><th>P/L</th><th>Book dopo</th><th>Exchange dopo</th><th></th>
       </tr>`;
   } else {
     head.innerHTML = `
       <tr>
-        <th>Data</th><th>Tipo</th><th>Evento</th><th>Dettagli</th><th>Esito</th><th>P/L</th><th>Cassa dopo</th><th></th>
+        <th>Data</th><th>Tipo</th><th>Evento</th><th>Dettagli</th><th>Esito</th><th>P/L</th><th>Cassa Generale dopo</th><th></th>
       </tr>`;
   }
 }
@@ -1225,13 +1451,14 @@ function renderStorico(){
         <td>${fmtData(g.data)}</td>
         <td>${g.evento}${g.book ? `<div class="helper-note">${g.book}</div>` : ''}</td>
         <td>${g.quota.toFixed(2)}</td>
+        <td>${g.quotaStimata !== null ? g.quotaStimata.toFixed(2) : '—'}</td>
         <td>${g.prob.toFixed(1)}%</td>
         <td>${fmtPerc(g.ev)}</td>
         <td>${fmtPerc(g.kelly)}</td>
         <td>${fmtEuro(g.stake)}</td>
         <td>${esitoTag}</td>
         <td>${plDisplay}</td>
-        <td>${fmtEuro(g.cassaDopo)}</td>
+        <td>${g.cassaValueDopo !== null && g.cassaValueDopo !== undefined ? fmtEuro(g.cassaValueDopo) : '—'}</td>
         <td><div class="row-actions">${esitoBtn}${delBtn}</div></td>
       `;
     } else if(storicoFilter === 'surebet'){
@@ -1244,14 +1471,15 @@ function renderStorico(){
         <td>${fmtEuro(g.stakeLay)}</td>
         <td>${esitoTag}</td>
         <td>${plDisplay}</td>
-        <td>${fmtEuro(g.cassaDopo)}</td>
+        <td>${g.cassaBookDopo !== null && g.cassaBookDopo !== undefined ? fmtEuro(g.cassaBookDopo) : '—'}</td>
+        <td>${g.cassaExchangeDopo !== null && g.cassaExchangeDopo !== undefined ? fmtEuro(g.cassaExchangeDopo) : '—'}</td>
         <td><div class="row-actions">${esitoBtn}${delBtn}</div></td>
       `;
     } else {
       const tipoTag = isSurebet ? '<span class="tag surebet">Surebet</span>' : '<span class="tag valuebet">Valuebet</span>';
       const dettagli = isSurebet
         ? `Back ${g.quotaBack.toFixed(2)} / Lay ${g.quotaLay.toFixed(2)}`
-        : `Quota ${g.quota.toFixed(2)} · EV ${fmtPerc(g.ev)}`;
+        : `Book ${g.quota.toFixed(2)} · Stimata ${g.quotaStimata !== null ? g.quotaStimata.toFixed(2) : '—'} · EV ${fmtPerc(g.ev)}`;
       tr.innerHTML = `
         <td>${fmtData(g.data)}</td>
         <td>${tipoTag}</td>
@@ -1300,22 +1528,36 @@ async function deleteGiocata(id){
   }
 }
 
-// Ricalcola la cassa progressiva localmente E aggiorna cassa_dopo sul database per ogni riga
+// Ricalcola tutti i saldi progressivi e aggiorna sul database le righe la cui cassa_dopo (o gli altri saldi) sono cambiati
 async function recalcolaCassaProgressivaERemota(){
-  let cassa = state.cassaIniziale;
+  const { snapshots } = calcolaCasseProgressive();
   const aggiornamenti = [];
-  state.giocate.forEach(g=>{
-    cassa += g.pl;
-    if(g.cassaDopo !== cassa){
-      g.cassaDopo = cassa;
-      aggiornamenti.push({ id: g.id, cassa_dopo: cassa });
-    } else {
-      g.cassaDopo = cassa;
+
+  state.giocate.forEach((g, i)=>{
+    const snap = snapshots[i];
+    const cambiato = g.cassaDopo !== snap.generale || g.cassaBookDopo !== snap.book || g.cassaExchangeDopo !== snap.exchange || g.cassaValueDopo !== snap.value;
+    g.cassaDopo = snap.generale;
+    g.cassaBookDopo = snap.book;
+    g.cassaExchangeDopo = snap.exchange;
+    g.cassaValueDopo = snap.value;
+    if(cambiato){
+      aggiornamenti.push({
+        id: g.id,
+        cassa_dopo: snap.generale,
+        cassa_book_dopo: snap.book,
+        cassa_exchange_dopo: snap.exchange,
+        cassa_value_dopo: snap.value
+      });
     }
   });
 
   for(const upd of aggiornamenti){
-    await sb.from('giocate').update({ cassa_dopo: upd.cassa_dopo }).eq('id', upd.id).eq('user_id', currentUser.id);
+    await sb.from('giocate').update({
+      cassa_dopo: upd.cassa_dopo,
+      cassa_book_dopo: upd.cassa_book_dopo,
+      cassa_exchange_dopo: upd.cassa_exchange_dopo,
+      cassa_value_dopo: upd.cassa_value_dopo
+    }).eq('id', upd.id).eq('user_id', currentUser.id);
   }
 }
 
@@ -1383,27 +1625,38 @@ async function applicaEsito(giocata, esito, pl){
 function renderSettings(){
   document.getElementById('set-cassa-iniziale').value = state.cassaIniziale;
   document.getElementById('set-commissione-default').value = state.commissioneDefault;
+  document.getElementById('set-perc-surebet').value = state.percSurebet;
+  document.getElementById('set-perc-book').value = state.percBook;
   document.getElementById('account-email').textContent = currentUser ? currentUser.email : '—';
 }
 
 document.getElementById('btn-salva-settings').addEventListener('click', async ()=>{
   const nuovaCassa = parseFloat(document.getElementById('set-cassa-iniziale').value);
   const nuovaComm = parseFloat(document.getElementById('set-commissione-default').value);
+  const nuovaPercSurebet = parseFloat(document.getElementById('set-perc-surebet').value);
+  const nuovaPercBook = parseFloat(document.getElementById('set-perc-book').value);
 
-  if(isNaN(nuovaCassa) || isNaN(nuovaComm)){
+  if(isNaN(nuovaCassa) || isNaN(nuovaComm) || isNaN(nuovaPercSurebet) || isNaN(nuovaPercBook)){
     showToast('⚠ Valori non validi', true); return;
+  }
+  if(nuovaPercSurebet < 0 || nuovaPercSurebet > 100 || nuovaPercBook < 0 || nuovaPercBook > 100){
+    showToast('⚠ Le percentuali devono essere comprese tra 0 e 100', true); return;
   }
 
   try{
     const { error } = await sb.from('impostazioni').update({
       cassa_iniziale: nuovaCassa,
       commissione_default: nuovaComm,
+      perc_surebet: nuovaPercSurebet,
+      perc_book: nuovaPercBook,
       updated_at: new Date().toISOString()
     }).eq('user_id', currentUser.id);
     if(error) throw error;
 
     state.cassaIniziale = nuovaCassa;
     state.commissioneDefault = nuovaComm;
+    state.percSurebet = nuovaPercSurebet;
+    state.percBook = nuovaPercBook;
 
     await recalcolaCassaProgressivaERemota();
     updateCassaDisplay();
@@ -1441,19 +1694,18 @@ function calcolaStatsCategoria(categoria){
   const profitto = giocate.reduce((sum,g)=> sum + (g.esito === 'pending' ? 0 : g.pl), 0);
   const winRate = chiuse.length > 0 ? (vinte/chiuse.length)*100 : null;
 
-  const stakeBase = giocate.reduce((sum,g)=>{
-    if(g.esito === 'pending') return sum;
-    if(categoria === 'surebet') return sum + g.stakeBack;
-    return sum + g.stake;
-  }, 0);
-  const roi = stakeBase > 0 ? (profitto/stakeBase)*100 : 0;
+  const iniziali = getSaldiIniziali();
+  const cassaBaseIniziale = categoria === 'surebet' ? (iniziali.book + iniziali.exchange) : iniziali.value;
+  const roi = cassaBaseIniziale > 0 ? (profitto/cassaBaseIniziale)*100 : 0;
 
   return { profitto, roi, vinte, perse, winRate, totale: giocate.length };
 }
 
 function renderDashboard(){
+  const { iniziali, snapshots, finale } = calcolaCasseProgressive();
+
   const cassaIniziale = state.cassaIniziale;
-  const cassaAttuale = getCassaCorrente();
+  const cassaAttuale = finale.generale;
   const profitto = cassaAttuale - cassaIniziale;
   const roi = cassaIniziale > 0 ? (profitto/cassaIniziale)*100 : 0;
 
@@ -1472,6 +1724,11 @@ function renderDashboard(){
 
   document.getElementById('stat-winrate').textContent = winRate === null ? '—' : fmtPerc(winRate);
 
+  // Surebet: Book + Exchange
+  document.getElementById('split-sb-book').textContent = fmtEuro(finale.book);
+  document.getElementById('split-sb-exchange').textContent = fmtEuro(finale.exchange);
+  document.getElementById('split-sb-totale').textContent = fmtEuro(finale.surebet);
+
   const sbStats = calcolaStatsCategoria('surebet');
   document.getElementById('split-sb-profitto').textContent = fmtEuro(sbStats.profitto);
   document.getElementById('split-sb-profitto').style.color = sbStats.profitto >= 0 ? 'var(--green)' : 'var(--red)';
@@ -1480,6 +1737,9 @@ function renderDashboard(){
   document.getElementById('split-sb-count').textContent = `${sbStats.vinte} / ${sbStats.totale}`;
   document.getElementById('split-sb-winrate').textContent = sbStats.winRate === null ? '—' : fmtPerc(sbStats.winRate);
 
+  // Valuebet: Cassa Value
+  document.getElementById('split-vb-cassa').textContent = fmtEuro(finale.value);
+
   const vbStats = calcolaStatsCategoria('valuebet');
   document.getElementById('split-vb-profitto').textContent = fmtEuro(vbStats.profitto);
   document.getElementById('split-vb-profitto').style.color = vbStats.profitto >= 0 ? 'var(--green)' : 'var(--red)';
@@ -1487,6 +1747,8 @@ function renderDashboard(){
   document.getElementById('split-vb-roi').style.color = vbStats.roi >= 0 ? 'var(--green)' : 'var(--red)';
   document.getElementById('split-vb-count').textContent = `${vbStats.vinte} / ${vbStats.totale}`;
   document.getElementById('split-vb-winrate').textContent = vbStats.winRate === null ? '—' : fmtPerc(vbStats.winRate);
+
+  renderCassaChart(iniziali, snapshots);
 
   const recentBox = document.getElementById('dashboard-recent');
   const recenti = [...state.giocate].reverse().slice(0,5);
@@ -1512,12 +1774,79 @@ function renderDashboard(){
   }).join('');
 }
 
+/* ================= GRAFICO ANDAMENTO CASSE (SVG, no librerie esterne) ================= */
+function renderCassaChart(iniziali, snapshots){
+  const svg = document.getElementById('cassa-chart');
+  const W = Math.max(svg.clientWidth || 600, 320);
+  const H = 260;
+  const padL = 50, padR = 16, padT = 16, padB = 28;
+
+  // Serie: punto 0 = saldi iniziali, poi uno per ogni giocata chiusa (snapshot già calcolato per tutte, incluse pending/void senza variazione)
+  const punti = [{ generale: iniziali.book + iniziali.exchange + iniziali.value, book: iniziali.book, exchange: iniziali.exchange, value: iniziali.value }, ...snapshots];
+
+  const serie = ['generale','book','exchange','value'];
+  const colori = { generale:'#FFD600', book:'#FF8A00', exchange:'#9D4EDD', value:'#4DA6FF' };
+
+  let minV = Infinity, maxV = -Infinity;
+  punti.forEach(p=>{
+    serie.forEach(s=>{
+      if(p[s] < minV) minV = p[s];
+      if(p[s] > maxV) maxV = p[s];
+    });
+  });
+  if(minV === maxV){ minV -= 10; maxV += 10; }
+  const margine = (maxV - minV) * 0.1 || 10;
+  minV -= margine; maxV += margine;
+
+  const innerW = W - padL - padR;
+  const innerH = H - padT - padB;
+
+  function xAt(i){ return padL + (punti.length === 1 ? innerW/2 : (i/(punti.length-1)) * innerW); }
+  function yAt(v){ return padT + innerH - ((v - minV)/(maxV - minV)) * innerH; }
+
+  let svgContent = '';
+
+  // Griglia orizzontale + etichette asse Y (4 linee)
+  const steps = 4;
+  for(let i=0; i<=steps; i++){
+    const v = minV + (maxV-minV)*(i/steps);
+    const y = yAt(v);
+    svgContent += `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="#2a2a2a" stroke-width="1" />`;
+    svgContent += `<text x="${padL-8}" y="${y+4}" text-anchor="end" font-size="10" fill="#9A9A9A" font-family="Barlow">${Math.round(v)}</text>`;
+  }
+
+  // Linee per ogni serie
+  serie.forEach(s=>{
+    const path = punti.map((p,i)=> `${i===0?'M':'L'} ${xAt(i)} ${yAt(p[s])}`).join(' ');
+    svgContent += `<path d="${path}" fill="none" stroke="${colori[s]}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" />`;
+  });
+
+  // Pallini sull'ultimo punto di ogni serie
+  const ultimo = punti[punti.length-1];
+  serie.forEach(s=>{
+    svgContent += `<circle cx="${xAt(punti.length-1)}" cy="${yAt(ultimo[s])}" r="4" fill="${colori[s]}" />`;
+  });
+
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svg.innerHTML = svgContent;
+}
+
 /* ================= PWA SERVICE WORKER ================= */
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js').catch((e)=>console.error('SW registration failed', e));
   });
 }
+
+let resizeTimer = null;
+window.addEventListener('resize', ()=>{
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(()=>{
+    if(currentUser && document.getElementById('dashboard').classList.contains('active')){
+      renderDashboard();
+    }
+  }, 200);
+});
 </script>
 </body>
 </html>
