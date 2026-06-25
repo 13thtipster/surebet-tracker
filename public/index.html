@@ -14,6 +14,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800;900&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root{
     --bg: #0a0a0a;
@@ -46,6 +47,56 @@
   }
   #app{max-width:1100px; margin:0 auto; padding-bottom:90px;}
 
+  /* ---------- AUTH SCREEN ---------- */
+  #auth-screen{
+    min-height:100vh; display:flex; align-items:center; justify-content:center;
+    padding:20px;
+  }
+  .auth-box{
+    width:100%; max-width:380px; background:var(--bg-card); border:1px solid var(--line);
+    border-radius:var(--radius); padding:32px 28px;
+  }
+  .auth-brand{display:flex; align-items:baseline; gap:8px; justify-content:center; margin-bottom:4px;}
+  .auth-brand .num{color:var(--yellow); font-size:34px; font-weight:900; font-family:'Barlow Condensed';}
+  .auth-brand .name{font-size:22px; font-weight:700; letter-spacing:0.03em;}
+  .auth-sub{text-align:center; color:var(--text-dim); font-size:12px; text-transform:uppercase; letter-spacing:0.12em; margin-bottom:28px;}
+  .auth-tabs{display:flex; gap:6px; margin-bottom:20px; background:var(--bg-elev); border-radius:8px; padding:4px;}
+  .auth-tabs button{
+    flex:1; padding:9px; border:none; background:none; color:var(--text-dim);
+    font-family:'Barlow Condensed'; font-weight:700; text-transform:uppercase; letter-spacing:0.04em;
+    font-size:13px; border-radius:6px; cursor:pointer;
+  }
+  .auth-tabs button.active{background:var(--yellow); color:#0a0a0a;}
+  .auth-field{margin-bottom:14px;}
+  .auth-field label{font-size:11px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.06em; display:block; margin-bottom:6px;}
+  .auth-field input{
+    width:100%; background:var(--bg-elev); border:1px solid var(--line); border-radius:6px;
+    color:var(--text); padding:11px 12px; font-size:15px; font-family:'Barlow';
+  }
+  .auth-field input:focus{outline:none; border-color:var(--yellow);}
+  .auth-submit{
+    width:100%; background:var(--yellow); color:#0a0a0a; border:none; border-radius:6px;
+    padding:13px; font-family:'Barlow Condensed'; font-weight:800; text-transform:uppercase;
+    letter-spacing:0.05em; font-size:14px; cursor:pointer; margin-top:6px;
+  }
+  .auth-submit:hover{background:#ffe14d;}
+  .auth-submit:disabled{opacity:0.5; cursor:not-allowed;}
+  .auth-divider{display:flex; align-items:center; gap:10px; margin:18px 0; color:var(--text-dim); font-size:11px; text-transform:uppercase; letter-spacing:0.08em;}
+  .auth-divider::before, .auth-divider::after{content:''; flex:1; height:1px; background:var(--line);}
+  .auth-google{
+    width:100%; background:var(--bg-elev); border:1px solid var(--line); color:var(--text);
+    border-radius:6px; padding:12px; font-family:'Barlow'; font-weight:600; font-size:14px;
+    cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px;
+  }
+  .auth-google:hover{border-color:var(--text-dim);}
+  .auth-msg{font-size:12px; padding:10px 12px; border-radius:6px; margin-bottom:14px; line-height:1.4;}
+  .auth-msg.error{background:rgba(255,76,76,0.1); color:var(--red); border:1px solid rgba(255,76,76,0.3);}
+  .auth-msg.success{background:rgba(61,220,132,0.1); color:var(--green); border:1px solid rgba(61,220,132,0.3);}
+  .auth-loading{
+    min-height:100vh; display:flex; align-items:center; justify-content:center;
+    color:var(--text-dim); font-family:'Barlow Condensed'; text-transform:uppercase; letter-spacing:0.1em;
+  }
+
   /* ---------- HEADER ---------- */
   header{
     position:sticky; top:0; z-index:20;
@@ -58,12 +109,19 @@
   .brand .num{color:var(--yellow); font-size:26px; font-weight:900; font-family:'Barlow Condensed';}
   .brand .name{font-size:18px; font-weight:700; letter-spacing:0.03em;}
   .brand .sub{font-size:10px; color:var(--text-dim); letter-spacing:0.15em; text-transform:uppercase; margin-left:4px;}
+  .header-right{display:flex; align-items:center; gap:10px;}
   .cassa-pill{
     background:var(--bg-card); border:1px solid var(--line); border-radius:30px;
     padding:8px 16px; text-align:right; min-width:120px;
   }
   .cassa-pill .lbl{font-size:9px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.1em;}
   .cassa-pill .val{font-family:'Barlow Condensed'; font-weight:800; font-size:18px; color:var(--yellow);}
+  .logout-btn{
+    background:none; border:1px solid var(--line); color:var(--text-dim);
+    border-radius:30px; padding:8px 14px; font-size:11px; cursor:pointer;
+    font-family:'Barlow Condensed'; text-transform:uppercase; letter-spacing:0.05em; font-weight:700;
+  }
+  .logout-btn:hover{border-color:var(--red); color:var(--red);}
 
   /* ---------- TABS ---------- */
   nav.tabs{
@@ -151,6 +209,7 @@
     font-family:'Barlow Condensed'; font-weight:800; text-transform:uppercase; letter-spacing:0.05em;
     border:none; border-radius:6px; padding:12px 20px; cursor:pointer; font-size:14px;
   }
+  .btn:disabled{opacity:0.5; cursor:not-allowed;}
   .btn-primary{background:var(--yellow); color:#0a0a0a;}
   .btn-primary:hover{background:#ffe14d;}
   .btn-primary.blue{background:var(--blue); color:#06141f;}
@@ -231,6 +290,7 @@
     opacity:0; transition:all .25s ease; z-index:50; font-size:13px; pointer-events:none;
   }
   .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+  .toast.error{background:var(--red); color:#fff;}
 
   .helper-note{font-size:11px; color:var(--text-dim); margin-top:4px; line-height:1.4;}
   .modal-overlay{
@@ -250,7 +310,48 @@
 </style>
 </head>
 <body>
-<div id="app">
+
+<!-- ================= AUTH SCREEN ================= -->
+<div id="auth-screen">
+  <div class="auth-box">
+    <div class="auth-brand">
+      <span class="num">13<sup style="font-size:16px;">th</sup></span>
+      <span class="name">TRACKER</span>
+    </div>
+    <div class="auth-sub">Surebet · Valuebet</div>
+
+    <div class="auth-tabs">
+      <button id="auth-tab-login" class="active">Accedi</button>
+      <button id="auth-tab-signup">Registrati</button>
+    </div>
+
+    <div id="auth-msg-box"></div>
+
+    <div class="auth-field">
+      <label>Email</label>
+      <input type="email" id="auth-email" placeholder="tuaemail@esempio.com" autocomplete="email" />
+    </div>
+    <div class="auth-field">
+      <label>Password</label>
+      <input type="password" id="auth-password" placeholder="••••••••" autocomplete="current-password" />
+    </div>
+
+    <button class="auth-submit" id="auth-submit-btn">Accedi</button>
+
+    <div class="auth-divider">oppure</div>
+
+    <button class="auth-google" id="auth-google-btn">
+      <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.9A8.78 8.78 0 0 0 17.64 9.2z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.9-2.26c-.8.55-1.84.86-3.06.86A5.5 5.5 0 0 1 3.78 11H.78v2.33A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.78 11a5.4 5.4 0 0 1 0-3.4V5.27H.78a9 9 0 0 0 0 7.06z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.46 3.44 1.35l2.57-2.57A8.94 8.94 0 0 0 9 0a9 9 0 0 0-8.22 5.27l3 2.33A5.5 5.5 0 0 1 9 3.58z"/></svg>
+      Accedi con Google
+    </button>
+  </div>
+</div>
+
+<!-- ================= LOADING SCREEN ================= -->
+<div id="loading-screen" class="auth-loading" style="display:none;">Caricamento…</div>
+
+<!-- ================= APP ================= -->
+<div id="app" style="display:none;">
 
   <header>
     <div class="brand">
@@ -258,9 +359,12 @@
       <span class="name">TRACKER</span>
       <span class="sub">Surebet · Valuebet</span>
     </div>
-    <div class="cassa-pill">
-      <div class="lbl">Cassa totale</div>
-      <div class="val" id="cassa-display">€ 0,00</div>
+    <div class="header-right">
+      <div class="cassa-pill">
+        <div class="lbl">Cassa totale</div>
+        <div class="val" id="cassa-display">€ 0,00</div>
+      </div>
+      <button class="logout-btn" id="logout-btn">Esci</button>
     </div>
   </header>
 
@@ -490,6 +594,19 @@
       </div>
 
       <div class="panel">
+        <h3><span class="bar"></span>Account</h3>
+        <div class="settings-row">
+          <div>
+            <div class="lbl">Email</div>
+            <div class="sub" id="account-email">—</div>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-ghost" id="btn-logout-2">Esci dall'account</button>
+        </div>
+      </div>
+
+      <div class="panel">
         <h3><span class="bar"></span>Zona Pericolosa</h3>
         <p class="helper-note" style="margin-bottom:14px;">Azzera tutto lo storico (surebet e valuebet) e riporta la cassa al valore iniziale impostato sopra. Operazione irreversibile.</p>
         <button class="btn btn-danger" id="btn-reset-tutto">Reset completo dati</button>
@@ -532,85 +649,38 @@
 <div class="toast" id="toast"></div>
 
 <script>
-/* ================= STORAGE LAYER ================= */
-const STORAGE_KEY = 'tracker_state_v2';
-const OLD_STORAGE_KEY = 'tracker_state_v1';
+/* ================= SUPABASE CONFIG ================= */
+const SUPABASE_URL = 'https://aelrhtlihebhpehpbrft.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_qMQFiuzpvS4JOpWKc4u1-w_SuDFuCEd';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-function migrateOldState(){
-  try{
-    const raw = localStorage.getItem(OLD_STORAGE_KEY);
-    if(!raw) return null;
-    const old = JSON.parse(raw);
-    const giocate = (old.giocate || []).map(g=>{
-      if(g.tipo === 'surebet'){
-        return {
-          id:g.id, data:g.data, categoria:'surebet', evento:g.evento, book:g.book,
-          quotaBack:g.quotaBack, stakeBack:g.stakeBack, quotaLay:g.quotaLay, stakeLay:g.stakeLay,
-          commissione:g.commissione, esito:g.esito, pl:g.pl, cassaDopo:g.cassaDopo
-        };
-      }
-      // vecchie valuebet salvate con schema surebet: portiamo i dati minimi compatibili
-      return {
-        id:g.id, data:g.data, categoria:'valuebet', evento:g.evento, book:g.book,
-        quota:g.quotaBack, prob:null, ev:null, kelly:null, stake:g.stakeBack,
-        esito:g.esito === 'win_back' ? 'win' : (g.esito === 'win_lay' ? 'loss' : g.esito),
-        pl:g.pl, cassaDopo:g.cassaDopo
-      };
-    });
-    return { cassaIniziale: old.cassaIniziale, commissioneDefault: old.commissioneDefault, giocate };
-  }catch(e){ console.error('Migration error', e); return null; }
-}
-
-function loadState(){
-  try{
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if(raw) return JSON.parse(raw);
-  }catch(e){ console.error('Storage read error', e); }
-
-  const migrated = migrateOldState();
-  if(migrated) return migrated;
-
-  return {
-    cassaIniziale: 1000,
-    commissioneDefault: 3,
-    giocate: []
-    // surebet: {id, data, categoria:'surebet', evento, book, quotaBack, stakeBack, quotaLay, stakeLay, commissione, esito, pl, cassaDopo}
-    // valuebet: {id, data, categoria:'valuebet', evento, book, quota, prob, ev, kelly, stake, esito, pl, cassaDopo}
-  };
-}
-function saveState(state){
-  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
-  catch(e){ console.error('Storage write error', e); }
-}
-
-let state = loadState();
+let currentUser = null;
+let state = {
+  cassaIniziale: 1000,
+  commissioneDefault: 3,
+  giocate: []
+};
 
 /* ================= CALCOLO SUREBET (NON-SPLIT) ================= */
 function calcolaScenariSurebet({quotaBack, stakeBack, quotaLay, stakeLay, commissione}){
   const liability = stakeLay * (quotaLay - 1);
   const esposizione = stakeBack + liability;
-
   const profittoBack = (stakeBack * (quotaBack - 1)) - liability;
-
   const guadagnoLayLordo = stakeLay;
   const commissioneApplicata = guadagnoLayLordo * (commissione/100);
   const profittoLay = (guadagnoLayLordo - commissioneApplicata) - stakeBack;
-
   const percGuadagnoBack = stakeBack > 0 ? (profittoBack/stakeBack)*100 : 0;
   const percGuadagnoLay = stakeBack > 0 ? (profittoLay/stakeBack)*100 : 0;
-
   return { liability, esposizione, profittoBack, profittoLay, percGuadagnoBack, percGuadagnoLay };
 }
 
 /* ================= CALCOLO VALUEBET ================= */
-// EV% = (prob * quota) - 1, espresso in percentuale
-// Kelly % (full kelly) = (prob*(quota-1) - (1-prob)) / (quota-1)  [frazione di bankroll, puramente informativa]
 function calcolaValuebet({quota, prob}){
   const p = prob / 100;
-  const ev = (p * quota) - 1; // frazionario (es 0.05 = +5%)
+  const ev = (p * quota) - 1;
   const b = quota - 1;
   let kelly = b > 0 ? ((p * b) - (1 - p)) / b : 0;
-  if(kelly < 0) kelly = 0; // niente kelly negativo, non ha senso giocare
+  if(kelly < 0) kelly = 0;
   return { evPerc: ev * 100, kellyPerc: kelly * 100 };
 }
 
@@ -628,11 +698,187 @@ function fmtData(iso){
 }
 
 /* ================= TOAST ================= */
-function showToast(msg){
+function showToast(msg, isError){
   const t = document.getElementById('toast');
   t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'), 2200);
+  t.className = 'toast show' + (isError ? ' error' : '');
+  setTimeout(()=>{ t.classList.remove('show'); }, 2500);
+}
+
+/* ================= AUTH UI ================= */
+let authMode = 'login';
+
+document.getElementById('auth-tab-login').addEventListener('click', ()=>{
+  authMode = 'login';
+  document.getElementById('auth-tab-login').classList.add('active');
+  document.getElementById('auth-tab-signup').classList.remove('active');
+  document.getElementById('auth-submit-btn').textContent = 'Accedi';
+  clearAuthMsg();
+});
+document.getElementById('auth-tab-signup').addEventListener('click', ()=>{
+  authMode = 'signup';
+  document.getElementById('auth-tab-signup').classList.add('active');
+  document.getElementById('auth-tab-login').classList.remove('active');
+  document.getElementById('auth-submit-btn').textContent = 'Crea account';
+  clearAuthMsg();
+});
+
+function showAuthMsg(msg, type){
+  const box = document.getElementById('auth-msg-box');
+  box.innerHTML = `<div class="auth-msg ${type}">${msg}</div>`;
+}
+function clearAuthMsg(){
+  document.getElementById('auth-msg-box').innerHTML = '';
+}
+
+document.getElementById('auth-submit-btn').addEventListener('click', async ()=>{
+  const email = document.getElementById('auth-email').value.trim();
+  const password = document.getElementById('auth-password').value;
+  if(!email || !password){
+    showAuthMsg('Inserisci email e password.', 'error');
+    return;
+  }
+  const btn = document.getElementById('auth-submit-btn');
+  btn.disabled = true;
+  clearAuthMsg();
+
+  try{
+    if(authMode === 'signup'){
+      const { error } = await sb.auth.signUp({ email, password });
+      if(error) throw error;
+      showAuthMsg('Account creato. Controlla la tua email per confermare, poi accedi.', 'success');
+    } else {
+      const { error } = await sb.auth.signInWithPassword({ email, password });
+      if(error) throw error;
+      // onAuthStateChange gestirà il passaggio alla app
+    }
+  } catch(err){
+    showAuthMsg(traduciErroreAuth(err.message), 'error');
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+document.getElementById('auth-google-btn').addEventListener('click', async ()=>{
+  clearAuthMsg();
+  const { error } = await sb.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: window.location.origin }
+  });
+  if(error) showAuthMsg(traduciErroreAuth(error.message), 'error');
+});
+
+function traduciErroreAuth(msg){
+  if(/invalid login credentials/i.test(msg)) return 'Email o password non corrette.';
+  if(/user already registered/i.test(msg)) return 'Esiste già un account con questa email. Prova ad accedere.';
+  if(/password should be at least/i.test(msg)) return 'La password deve avere almeno 6 caratteri.';
+  if(/email not confirmed/i.test(msg)) return 'Email non confermata. Controlla la tua casella di posta.';
+  return msg;
+}
+
+document.getElementById('logout-btn').addEventListener('click', doLogout);
+document.getElementById('btn-logout-2').addEventListener('click', doLogout);
+async function doLogout(){
+  await sb.auth.signOut();
+}
+
+/* ================= AUTH STATE / APP BOOTSTRAP ================= */
+sb.auth.onAuthStateChange((event, session) => {
+  if(session && session.user){
+    currentUser = session.user;
+    showApp();
+  } else {
+    currentUser = null;
+    showAuthScreen();
+  }
+});
+
+function showAuthScreen(){
+  document.getElementById('loading-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('auth-screen').style.display = 'flex';
+}
+
+async function showApp(){
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('loading-screen').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+
+  document.getElementById('account-email').textContent = currentUser.email || '—';
+
+  await loadAllData();
+
+  document.getElementById('loading-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+
+  document.getElementById('sb-commissione').value = state.commissioneDefault;
+  updateCassaDisplay();
+  updatePreviewSurebet();
+  updatePreviewValuebet();
+  renderDashboard();
+}
+
+/* ================= CARICAMENTO DATI DA SUPABASE ================= */
+async function loadAllData(){
+  try{
+    const { data: impostazioni, error: impErr } = await sb
+      .from('impostazioni')
+      .select('*')
+      .eq('user_id', currentUser.id)
+      .maybeSingle();
+
+    if(impErr) throw impErr;
+
+    if(impostazioni){
+      state.cassaIniziale = parseFloat(impostazioni.cassa_iniziale);
+      state.commissioneDefault = parseFloat(impostazioni.commissione_default);
+    } else {
+      // prima volta per questo utente: creiamo la riga impostazioni di default
+      const { error: insErr } = await sb.from('impostazioni').insert({
+        user_id: currentUser.id, cassa_iniziale: 1000, commissione_default: 3
+      });
+      if(insErr) throw insErr;
+      state.cassaIniziale = 1000;
+      state.commissioneDefault = 3;
+    }
+
+    const { data: giocateDb, error: gErr } = await sb
+      .from('giocate')
+      .select('*')
+      .eq('user_id', currentUser.id)
+      .order('created_at', { ascending: true });
+
+    if(gErr) throw gErr;
+
+    state.giocate = (giocateDb || []).map(dbRowToGiocata);
+
+  } catch(err){
+    console.error('Errore caricamento dati', err);
+    showToast('⚠ Errore nel caricamento dati: ' + err.message, true);
+  }
+}
+
+function dbRowToGiocata(row){
+  return {
+    id: row.id,
+    data: row.created_at,
+    categoria: row.categoria,
+    evento: row.evento,
+    book: row.book,
+    quotaBack: row.quota_back !== null ? parseFloat(row.quota_back) : null,
+    stakeBack: row.stake_back !== null ? parseFloat(row.stake_back) : null,
+    quotaLay: row.quota_lay !== null ? parseFloat(row.quota_lay) : null,
+    stakeLay: row.stake_lay !== null ? parseFloat(row.stake_lay) : null,
+    commissione: row.commissione !== null ? parseFloat(row.commissione) : null,
+    quota: row.quota !== null ? parseFloat(row.quota) : null,
+    prob: row.prob !== null ? parseFloat(row.prob) : null,
+    ev: row.ev !== null ? parseFloat(row.ev) : null,
+    kelly: row.kelly !== null ? parseFloat(row.kelly) : null,
+    stake: row.stake !== null ? parseFloat(row.stake) : null,
+    esito: row.esito,
+    pl: parseFloat(row.pl),
+    cassaDopo: row.cassa_dopo !== null ? parseFloat(row.cassa_dopo) : null
+  };
 }
 
 /* ================= TABS ================= */
@@ -780,83 +1026,96 @@ document.getElementById('btn-reset-valuebet').addEventListener('click', ()=>{
 });
 
 /* ================= SALVA SUREBET ================= */
-document.getElementById('btn-salva-surebet').addEventListener('click', ()=>{
+document.getElementById('btn-salva-surebet').addEventListener('click', async ()=>{
   const vals = readSurebetNumbers();
   const evento = document.getElementById('sb-evento').value.trim();
   const book = document.getElementById('sb-book').value.trim();
 
-  if(!evento){ showToast('⚠ Inserisci il nome evento'); return; }
+  if(!evento){ showToast('⚠ Inserisci il nome evento', true); return; }
   if(vals.stakeBack <= 0 || vals.quotaBack <= 0 || vals.quotaLay <= 0 || vals.stakeLay <= 0){
-    showToast('⚠ Compila tutti i campi quote/stake'); return;
+    showToast('⚠ Compila tutti i campi quote/stake', true); return;
   }
 
-  const giocata = {
-    id: Date.now().toString(36) + Math.random().toString(36).slice(2,7),
-    data: new Date().toISOString(),
-    categoria: 'surebet',
-    evento, book,
-    quotaBack: vals.quotaBack, stakeBack: vals.stakeBack,
-    quotaLay: vals.quotaLay, stakeLay: vals.stakeLay,
-    commissione: vals.commissione,
-    esito: 'pending',
-    pl: 0,
-    cassaDopo: getCassaCorrente()
-  };
+  const btn = document.getElementById('btn-salva-surebet');
+  btn.disabled = true;
 
-  state.giocate.push(giocata);
-  saveState(state);
-  updateCassaDisplay();
-  showToast('✓ Surebet salvata come Pending');
+  try{
+    const { data, error } = await sb.from('giocate').insert({
+      user_id: currentUser.id,
+      categoria: 'surebet',
+      evento, book,
+      quota_back: vals.quotaBack, stake_back: vals.stakeBack,
+      quota_lay: vals.quotaLay, stake_lay: vals.stakeLay,
+      commissione: vals.commissione,
+      esito: 'pending', pl: 0,
+      cassa_dopo: getCassaCorrente()
+    }).select().single();
 
-  ['sb-evento','sb-quota-back','sb-stake-back','sb-quota-lay','sb-stake-lay','sb-book'].forEach(id=>{
-    document.getElementById(id).value = '';
-  });
-  updatePreviewSurebet();
+    if(error) throw error;
 
-  document.querySelector('.tab-btn[data-tab="storico"]').click();
+    state.giocate.push(dbRowToGiocata(data));
+    updateCassaDisplay();
+    showToast('✓ Surebet salvata come Pending');
+
+    ['sb-evento','sb-quota-back','sb-stake-back','sb-quota-lay','sb-stake-lay','sb-book'].forEach(id=>{
+      document.getElementById(id).value = '';
+    });
+    updatePreviewSurebet();
+
+    document.querySelector('.tab-btn[data-tab="storico"]').click();
+  } catch(err){
+    console.error(err);
+    showToast('⚠ Errore salvataggio: ' + err.message, true);
+  } finally {
+    btn.disabled = false;
+  }
 });
 
 /* ================= SALVA VALUEBET ================= */
-document.getElementById('btn-salva-valuebet').addEventListener('click', ()=>{
+document.getElementById('btn-salva-valuebet').addEventListener('click', async ()=>{
   const vals = readValuebetNumbers();
   const evento = document.getElementById('vb-evento').value.trim();
   const book = document.getElementById('vb-book').value.trim();
 
-  if(!evento){ showToast('⚠ Inserisci il nome evento'); return; }
+  if(!evento){ showToast('⚠ Inserisci il nome evento', true); return; }
   if(vals.quota <= 0 || vals.prob <= 0 || vals.stake <= 0){
-    showToast('⚠ Compila quota, probabilità e stake'); return;
+    showToast('⚠ Compila quota, probabilità e stake', true); return;
   }
 
   const r = calcolaValuebet(vals);
+  const btn = document.getElementById('btn-salva-valuebet');
+  btn.disabled = true;
 
-  const giocata = {
-    id: Date.now().toString(36) + Math.random().toString(36).slice(2,7),
-    data: new Date().toISOString(),
-    categoria: 'valuebet',
-    evento, book,
-    quota: vals.quota,
-    prob: vals.prob,
-    ev: r.evPerc,
-    kelly: r.kellyPerc,
-    stake: vals.stake,
-    esito: 'pending',
-    pl: 0,
-    cassaDopo: getCassaCorrente()
-  };
+  try{
+    const { data, error } = await sb.from('giocate').insert({
+      user_id: currentUser.id,
+      categoria: 'valuebet',
+      evento, book,
+      quota: vals.quota, prob: vals.prob, ev: r.evPerc, kelly: r.kellyPerc, stake: vals.stake,
+      esito: 'pending', pl: 0,
+      cassa_dopo: getCassaCorrente()
+    }).select().single();
 
-  state.giocate.push(giocata);
-  saveState(state);
-  updateCassaDisplay();
-  showToast('✓ Valuebet salvata come Pending');
+    if(error) throw error;
 
-  ['vb-evento','vb-quota','vb-prob','vb-stake','vb-book'].forEach(id=>{
-    document.getElementById(id).value = '';
-  });
-  document.getElementById('vb-ev').value = '';
-  document.getElementById('vb-kelly').value = '';
-  updatePreviewValuebet();
+    state.giocate.push(dbRowToGiocata(data));
+    updateCassaDisplay();
+    showToast('✓ Valuebet salvata come Pending');
 
-  document.querySelector('.tab-btn[data-tab="storico"]').click();
+    ['vb-evento','vb-quota','vb-prob','vb-stake','vb-book'].forEach(id=>{
+      document.getElementById(id).value = '';
+    });
+    document.getElementById('vb-ev').value = '';
+    document.getElementById('vb-kelly').value = '';
+    updatePreviewValuebet();
+
+    document.querySelector('.tab-btn[data-tab="storico"]').click();
+  } catch(err){
+    console.error(err);
+    showToast('⚠ Errore salvataggio: ' + err.message, true);
+  } finally {
+    btn.disabled = false;
+  }
 });
 
 /* ================= STORICO ================= */
@@ -994,26 +1253,44 @@ function renderStorico(){
   });
 }
 
-function deleteGiocata(id){
-  state.giocate = state.giocate.filter(g=>g.id !== id);
-  recalcolaCassaProgressiva();
-  saveState(state);
-  renderStorico();
-  updateCassaDisplay();
-  showToast('Giocata eliminata');
+async function deleteGiocata(id){
+  try{
+    const { error } = await sb.from('giocate').delete().eq('id', id).eq('user_id', currentUser.id);
+    if(error) throw error;
+
+    state.giocate = state.giocate.filter(g=>g.id !== id);
+    await recalcolaCassaProgressivaERemota();
+    renderStorico();
+    updateCassaDisplay();
+    showToast('Giocata eliminata');
+  } catch(err){
+    console.error(err);
+    showToast('⚠ Errore eliminazione: ' + err.message, true);
+  }
 }
 
-function recalcolaCassaProgressiva(){
+// Ricalcola la cassa progressiva localmente E aggiorna cassa_dopo sul database per ogni riga
+async function recalcolaCassaProgressivaERemota(){
   let cassa = state.cassaIniziale;
+  const aggiornamenti = [];
   state.giocate.forEach(g=>{
     cassa += g.pl;
-    g.cassaDopo = cassa;
+    if(g.cassaDopo !== cassa){
+      g.cassaDopo = cassa;
+      aggiornamenti.push({ id: g.id, cassa_dopo: cassa });
+    } else {
+      g.cassaDopo = cassa;
+    }
   });
+
+  for(const upd of aggiornamenti){
+    await sb.from('giocate').update({ cassa_dopo: upd.cassa_dopo }).eq('id', upd.id).eq('user_id', currentUser.id);
+  }
 }
 
 /* ================= MODAL ESITO — SUREBET ================= */
 document.querySelectorAll('#modal-esito-surebet [data-esito]').forEach(btn=>{
-  btn.addEventListener('click', ()=>{
+  btn.addEventListener('click', async ()=>{
     const azione = btn.dataset.esito;
     document.getElementById('modal-esito-surebet').classList.remove('show');
     if(azione === 'cancel' || !esitoTargetId) { esitoTargetId = null; return; }
@@ -1022,30 +1299,20 @@ document.querySelectorAll('#modal-esito-surebet [data-esito]').forEach(btn=>{
     if(!giocata){ esitoTargetId = null; return; }
 
     const r = calcolaScenariSurebet(giocata);
+    let esito, pl;
 
-    if(azione === 'win_back'){
-      giocata.esito = 'win_back';
-      giocata.pl = r.profittoBack;
-    } else if(azione === 'win_lay'){
-      giocata.esito = 'win_lay';
-      giocata.pl = r.profittoLay;
-    } else if(azione === 'void'){
-      giocata.esito = 'void';
-      giocata.pl = 0;
-    }
+    if(azione === 'win_back'){ esito = 'win_back'; pl = r.profittoBack; }
+    else if(azione === 'win_lay'){ esito = 'win_lay'; pl = r.profittoLay; }
+    else if(azione === 'void'){ esito = 'void'; pl = 0; }
 
-    recalcolaCassaProgressiva();
-    saveState(state);
-    renderStorico();
-    updateCassaDisplay();
-    showToast('✓ Esito registrato');
+    await applicaEsito(giocata, esito, pl);
     esitoTargetId = null;
   });
 });
 
 /* ================= MODAL ESITO — VALUEBET ================= */
 document.querySelectorAll('#modal-esito-valuebet [data-esito]').forEach(btn=>{
-  btn.addEventListener('click', ()=>{
+  btn.addEventListener('click', async ()=>{
     const azione = btn.dataset.esito;
     document.getElementById('modal-esito-valuebet').classList.remove('show');
     if(azione === 'cancel' || !esitoTargetId) { esitoTargetId = null; return; }
@@ -1053,55 +1320,84 @@ document.querySelectorAll('#modal-esito-valuebet [data-esito]').forEach(btn=>{
     const giocata = state.giocate.find(g=>g.id === esitoTargetId);
     if(!giocata){ esitoTargetId = null; return; }
 
-    if(azione === 'win'){
-      giocata.esito = 'win';
-      giocata.pl = giocata.stake * (giocata.quota - 1);
-    } else if(azione === 'loss'){
-      giocata.esito = 'loss';
-      giocata.pl = -giocata.stake;
-    } else if(azione === 'void'){
-      giocata.esito = 'void';
-      giocata.pl = 0;
-    }
+    let esito, pl;
+    if(azione === 'win'){ esito = 'win'; pl = giocata.stake * (giocata.quota - 1); }
+    else if(azione === 'loss'){ esito = 'loss'; pl = -giocata.stake; }
+    else if(azione === 'void'){ esito = 'void'; pl = 0; }
 
-    recalcolaCassaProgressiva();
-    saveState(state);
-    renderStorico();
-    updateCassaDisplay();
-    showToast('✓ Esito registrato');
+    await applicaEsito(giocata, esito, pl);
     esitoTargetId = null;
   });
 });
+
+async function applicaEsito(giocata, esito, pl){
+  try{
+    giocata.esito = esito;
+    giocata.pl = pl;
+
+    const { error } = await sb.from('giocate').update({ esito, pl }).eq('id', giocata.id).eq('user_id', currentUser.id);
+    if(error) throw error;
+
+    await recalcolaCassaProgressivaERemota();
+    renderStorico();
+    updateCassaDisplay();
+    showToast('✓ Esito registrato');
+  } catch(err){
+    console.error(err);
+    showToast('⚠ Errore aggiornamento esito: ' + err.message, true);
+  }
+}
 
 /* ================= SETTINGS ================= */
 function renderSettings(){
   document.getElementById('set-cassa-iniziale').value = state.cassaIniziale;
   document.getElementById('set-commissione-default').value = state.commissioneDefault;
+  document.getElementById('account-email').textContent = currentUser ? currentUser.email : '—';
 }
 
-document.getElementById('btn-salva-settings').addEventListener('click', ()=>{
+document.getElementById('btn-salva-settings').addEventListener('click', async ()=>{
   const nuovaCassa = parseFloat(document.getElementById('set-cassa-iniziale').value);
   const nuovaComm = parseFloat(document.getElementById('set-commissione-default').value);
 
-  if(!isNaN(nuovaCassa)) state.cassaIniziale = nuovaCassa;
-  if(!isNaN(nuovaComm)) state.commissioneDefault = nuovaComm;
+  if(isNaN(nuovaCassa) || isNaN(nuovaComm)){
+    showToast('⚠ Valori non validi', true); return;
+  }
 
-  recalcolaCassaProgressiva();
-  saveState(state);
-  updateCassaDisplay();
-  showToast('✓ Impostazioni salvate');
+  try{
+    const { error } = await sb.from('impostazioni').update({
+      cassa_iniziale: nuovaCassa,
+      commissione_default: nuovaComm,
+      updated_at: new Date().toISOString()
+    }).eq('user_id', currentUser.id);
+    if(error) throw error;
+
+    state.cassaIniziale = nuovaCassa;
+    state.commissioneDefault = nuovaComm;
+
+    await recalcolaCassaProgressivaERemota();
+    updateCassaDisplay();
+    showToast('✓ Impostazioni salvate');
+  } catch(err){
+    console.error(err);
+    showToast('⚠ Errore salvataggio impostazioni: ' + err.message, true);
+  }
 });
 
-document.getElementById('btn-reset-tutto').addEventListener('click', ()=>{
-  if(confirm('Sei sicuro? Tutto lo storico verrà eliminato definitivamente.')){
-    const cassaIniziale = state.cassaIniziale;
-    const commissioneDefault = state.commissioneDefault;
-    state = { cassaIniziale, commissioneDefault, giocate: [] };
-    saveState(state);
-    updateCassaDisplay();
+document.getElementById('btn-reset-tutto').addEventListener('click', async ()=>{
+  if(!confirm('Sei sicuro? Tutto lo storico verrà eliminato definitivamente.')) return;
+
+  try{
+    const { error } = await sb.from('giocate').delete().eq('user_id', currentUser.id);
+    if(error) throw error;
+
+    state.giocate = [];
     renderStorico();
     renderDashboard();
+    updateCassaDisplay();
     showToast('Dati azzerati');
+  } catch(err){
+    console.error(err);
+    showToast('⚠ Errore reset: ' + err.message, true);
   }
 });
 
@@ -1111,11 +1407,9 @@ function calcolaStatsCategoria(categoria){
   const chiuse = giocate.filter(g=>g.esito !== 'pending' && g.esito !== 'void');
   const vinte = chiuse.filter(g=>g.pl > 0).length;
   const perse = chiuse.filter(g=>g.pl <= 0).length;
-  const pendingVoid = giocate.length - chiuse.length;
   const profitto = giocate.reduce((sum,g)=> sum + (g.esito === 'pending' ? 0 : g.pl), 0);
   const winRate = chiuse.length > 0 ? (vinte/chiuse.length)*100 : null;
 
-  // base di riferimento per ROI di categoria: somma stake "principale" investito su giocate chiuse
   const stakeBase = giocate.reduce((sum,g)=>{
     if(g.esito === 'pending') return sum;
     if(categoria === 'surebet') return sum + g.stakeBack;
@@ -1123,7 +1417,7 @@ function calcolaStatsCategoria(categoria){
   }, 0);
   const roi = stakeBase > 0 ? (profitto/stakeBase)*100 : 0;
 
-  return { profitto, roi, vinte, perse, pendingVoid, winRate, totale: giocate.length };
+  return { profitto, roi, vinte, perse, winRate, totale: giocate.length };
 }
 
 function renderDashboard(){
@@ -1147,25 +1441,22 @@ function renderDashboard(){
 
   document.getElementById('stat-winrate').textContent = winRate === null ? '—' : fmtPerc(winRate);
 
-  // split surebet
-  const sb = calcolaStatsCategoria('surebet');
-  document.getElementById('split-sb-profitto').textContent = fmtEuro(sb.profitto);
-  document.getElementById('split-sb-profitto').style.color = sb.profitto >= 0 ? 'var(--green)' : 'var(--red)';
-  document.getElementById('split-sb-roi').textContent = fmtPerc(sb.roi);
-  document.getElementById('split-sb-roi').style.color = sb.roi >= 0 ? 'var(--green)' : 'var(--red)';
-  document.getElementById('split-sb-count').textContent = `${sb.vinte} / ${sb.totale}`;
-  document.getElementById('split-sb-winrate').textContent = sb.winRate === null ? '—' : fmtPerc(sb.winRate);
+  const sbStats = calcolaStatsCategoria('surebet');
+  document.getElementById('split-sb-profitto').textContent = fmtEuro(sbStats.profitto);
+  document.getElementById('split-sb-profitto').style.color = sbStats.profitto >= 0 ? 'var(--green)' : 'var(--red)';
+  document.getElementById('split-sb-roi').textContent = fmtPerc(sbStats.roi);
+  document.getElementById('split-sb-roi').style.color = sbStats.roi >= 0 ? 'var(--green)' : 'var(--red)';
+  document.getElementById('split-sb-count').textContent = `${sbStats.vinte} / ${sbStats.totale}`;
+  document.getElementById('split-sb-winrate').textContent = sbStats.winRate === null ? '—' : fmtPerc(sbStats.winRate);
 
-  // split valuebet
-  const vb = calcolaStatsCategoria('valuebet');
-  document.getElementById('split-vb-profitto').textContent = fmtEuro(vb.profitto);
-  document.getElementById('split-vb-profitto').style.color = vb.profitto >= 0 ? 'var(--green)' : 'var(--red)';
-  document.getElementById('split-vb-roi').textContent = fmtPerc(vb.roi);
-  document.getElementById('split-vb-roi').style.color = vb.roi >= 0 ? 'var(--green)' : 'var(--red)';
-  document.getElementById('split-vb-count').textContent = `${vb.vinte} / ${vb.totale}`;
-  document.getElementById('split-vb-winrate').textContent = vb.winRate === null ? '—' : fmtPerc(vb.winRate);
+  const vbStats = calcolaStatsCategoria('valuebet');
+  document.getElementById('split-vb-profitto').textContent = fmtEuro(vbStats.profitto);
+  document.getElementById('split-vb-profitto').style.color = vbStats.profitto >= 0 ? 'var(--green)' : 'var(--red)';
+  document.getElementById('split-vb-roi').textContent = fmtPerc(vbStats.roi);
+  document.getElementById('split-vb-roi').style.color = vbStats.roi >= 0 ? 'var(--green)' : 'var(--red)';
+  document.getElementById('split-vb-count').textContent = `${vbStats.vinte} / ${vbStats.totale}`;
+  document.getElementById('split-vb-winrate').textContent = vbStats.winRate === null ? '—' : fmtPerc(vbStats.winRate);
 
-  // ultime 5
   const recentBox = document.getElementById('dashboard-recent');
   const recenti = [...state.giocate].reverse().slice(0,5);
   if(recenti.length === 0){
@@ -1189,13 +1480,6 @@ function renderDashboard(){
     `;
   }).join('');
 }
-
-/* ================= INIT ================= */
-document.getElementById('sb-commissione').value = state.commissioneDefault;
-updateCassaDisplay();
-updatePreviewSurebet();
-updatePreviewValuebet();
-renderDashboard();
 
 /* ================= PWA SERVICE WORKER ================= */
 if ('serviceWorker' in navigator) {
