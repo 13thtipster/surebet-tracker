@@ -287,9 +287,20 @@
   .settings-row{
     display:flex; justify-content:space-between; align-items:center;
     padding:14px 0; border-bottom:1px solid var(--line);
+    gap:14px;
   }
   .settings-row:last-child{border-bottom:none;}
   .settings-row .lbl{font-size:14px;}
+  @media(max-width:520px){
+    .settings-row{
+      flex-direction:column;
+      align-items:stretch;
+    }
+    .settings-row input{
+      width:100%;
+      text-align:left;
+    }
+  }
   .settings-row .sub{font-size:11px; color:var(--text-dim); margin-top:2px;}
   .settings-row input{
     width:110px; text-align:right; background:var(--bg-elev); border:1px solid var(--line);
@@ -1043,11 +1054,26 @@ async function showApp(){
 /* ================= CARICAMENTO DATI DA SUPABASE ================= */
 async function loadAllData(){
   try{
-    const { data: impostazioni, error: impErr } = await sb
+    let { data: impostazioni, error: impErr } = await sb
       .from('impostazioni')
       .select('*')
       .eq('user_id', currentUser.id)
       .maybeSingle();
+
+    // Se la prima query fallisce con un errore di rete/timeout (non un errore "vero" del database),
+    // riproviamo una volta prima di concludere che la riga non esiste. Su mobile, con connessioni
+    // più lente o instabili, una richiesta può fallire temporaneamente senza che la riga sia assente.
+    if(impErr){
+      console.warn('Primo tentativo lettura impostazioni fallito, riprovo…', impErr);
+      await new Promise(r => setTimeout(r, 600));
+      const retry = await sb
+        .from('impostazioni')
+        .select('*')
+        .eq('user_id', currentUser.id)
+        .maybeSingle();
+      impostazioni = retry.data;
+      impErr = retry.error;
+    }
 
     if(impErr) throw impErr;
 
@@ -1057,7 +1083,21 @@ async function loadAllData(){
       state.percSurebet = impostazioni.perc_surebet !== undefined && impostazioni.perc_surebet !== null ? parseFloat(impostazioni.perc_surebet) : 50;
       state.percBook = impostazioni.perc_book !== undefined && impostazioni.perc_book !== null ? parseFloat(impostazioni.perc_book) : 50;
     } else {
-      // prima volta per questo utente: creiamo la riga impostazioni di default
+      // Prima di creare una riga di default, verifichiamo con un conteggio diretto se esiste già
+      // una riga per questo utente: questo protegge dal caso in cui .maybeSingle() restituisca null
+      // per un problema transitorio invece che per assenza reale della riga.
+      const { count, error: countErr } = await sb
+        .from('impostazioni')
+        .select('user_id', { count: 'exact', head: true })
+        .eq('user_id', currentUser.id);
+
+      if(!countErr && count && count > 0){
+        // La riga esiste davvero, ma non siamo riusciti a leggerla: NON sovrascriviamo con valori
+        // di default. Mostriamo un avviso e interrompiamo, invece di rischiare di mostrare dati falsi.
+        throw new Error('La tua riga impostazioni esiste ma non è stato possibile leggerla correttamente. Riprova a ricaricare la pagina.');
+      }
+
+      // Prima volta vera per questo utente: creiamo la riga impostazioni di default
       const { error: insErr } = await sb.from('impostazioni').insert({
         user_id: currentUser.id, cassa_iniziale: 1000, commissione_default: 3,
         perc_surebet: 50, perc_book: 50
