@@ -764,6 +764,7 @@ const SUPABASE_ANON_KEY = 'sb_publishable_qMQFiuzpvS4JOpWKc4u1-w_SuDFuCEd';
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let currentUser = null;
+let scrittutePendenti = 0; // contatore di operazioni di salvataggio su Supabase ancora in corso
 let state = {
   cassaIniziale: 1000,
   commissioneDefault: 3,
@@ -956,6 +957,17 @@ document.getElementById('forgot-send-btn').addEventListener('click', async ()=>{
   }
 });
 async function doLogout(){
+  // Se c'è ancora un salvataggio in corso (es. hai appena cliccato un esito), aspettiamo che finisca
+  // prima di disconnettere: disconnettersi a metà di una scrittura potrebbe far perdere quel dato.
+  if(scrittutePendenti > 0){
+    showToast('Salvataggio in corso, attendere…');
+    let tentativi = 0;
+    while(scrittutePendenti > 0 && tentativi < 50){ // max ~5 secondi di attesa
+      await new Promise(r => setTimeout(r, 100));
+      tentativi++;
+    }
+  }
+
   try{
     const { error } = await sb.auth.signOut();
     if(error){
@@ -1385,6 +1397,7 @@ document.getElementById('btn-salva-surebet').addEventListener('click', async ()=
 
   const btn = document.getElementById('btn-salva-surebet');
   btn.disabled = true;
+  scrittutePendenti++;
 
   try{
     const { data, error } = await sb.from('giocate').insert({
@@ -1416,6 +1429,7 @@ document.getElementById('btn-salva-surebet').addEventListener('click', async ()=
     showToast('⚠ Errore salvataggio: ' + err.message, true);
   } finally {
     btn.disabled = false;
+    scrittutePendenti--;
   }
 });
 
@@ -1434,6 +1448,7 @@ document.getElementById('btn-salva-valuebet').addEventListener('click', async ()
   const r = calcolaValuebet({ quotaBook: vals.quotaBook, quotaStimata: vals.quotaStimata, cassaValue });
   const btn = document.getElementById('btn-salva-valuebet');
   btn.disabled = true;
+  scrittutePendenti++;
 
   try{
     const { data, error } = await sb.from('giocate').insert({
@@ -1472,6 +1487,7 @@ document.getElementById('btn-salva-valuebet').addEventListener('click', async ()
     showToast('⚠ Errore salvataggio: ' + err.message, true);
   } finally {
     btn.disabled = false;
+    scrittutePendenti--;
   }
 });
 
@@ -1613,6 +1629,7 @@ function renderStorico(){
 }
 
 async function deleteGiocata(id){
+  scrittutePendenti++;
   try{
     const { error } = await sb.from('giocate').delete().eq('id', id).eq('user_id', currentUser.id);
     if(error) throw error;
@@ -1625,6 +1642,8 @@ async function deleteGiocata(id){
   } catch(err){
     console.error(err);
     showToast('⚠ Errore eliminazione: ' + err.message, true);
+  } finally {
+    scrittutePendenti--;
   }
 }
 
@@ -1651,14 +1670,26 @@ async function recalcolaCassaProgressivaERemota(){
     }
   });
 
+  const fallimenti = [];
   for(const upd of aggiornamenti){
-    await sb.from('giocate').update({
+    const { error } = await sb.from('giocate').update({
       cassa_dopo: upd.cassa_dopo,
       cassa_book_dopo: upd.cassa_book_dopo,
       cassa_exchange_dopo: upd.cassa_exchange_dopo,
       cassa_value_dopo: upd.cassa_value_dopo
     }).eq('id', upd.id).eq('user_id', currentUser.id);
+
+    if(error){
+      console.error('Errore aggiornamento cassa per giocata', upd.id, error);
+      fallimenti.push(upd.id);
+    }
   }
+
+  if(fallimenti.length > 0){
+    showToast('⚠ Alcuni saldi non sono stati salvati sul server (' + fallimenti.length + '). Riprova o controlla la connessione.', true);
+  }
+
+  return fallimenti.length === 0;
 }
 
 /* ================= MODAL ESITO — SUREBET ================= */
@@ -1704,20 +1735,36 @@ document.querySelectorAll('#modal-esito-valuebet [data-esito]').forEach(btn=>{
 });
 
 async function applicaEsito(giocata, esito, pl){
-  try{
-    giocata.esito = esito;
-    giocata.pl = pl;
+  const esitoPrecedente = giocata.esito;
+  const plPrecedente = giocata.pl;
+  scrittutePendenti++;
 
+  try{
     const { error } = await sb.from('giocate').update({ esito, pl }).eq('id', giocata.id).eq('user_id', currentUser.id);
     if(error) throw error;
 
-    await recalcolaCassaProgressivaERemota();
+    // L'update dell'esito sul server è andato a buon fine: aggiorniamo lo stato locale
+    giocata.esito = esito;
+    giocata.pl = pl;
+
+    const cassaOk = await recalcolaCassaProgressivaERemota();
     renderStorico();
     updateCassaDisplay();
-    showToast('✓ Esito registrato');
+
+    if(cassaOk){
+      showToast('✓ Esito registrato');
+    }
+    // Se cassaOk è false, recalcolaCassaProgressivaERemota ha già mostrato un toast di errore specifico:
+    // l'esito è comunque salvato correttamente, solo i saldi potrebbero non essersi aggiornati sul server.
   } catch(err){
+    // L'update dell'esito stesso è fallito: NON modifichiamo lo stato locale, così l'interfaccia
+    // resta coerente con quello che è davvero salvato sul database (niente "falso successo" visivo).
+    giocata.esito = esitoPrecedente;
+    giocata.pl = plPrecedente;
     console.error(err);
-    showToast('⚠ Errore aggiornamento esito: ' + err.message, true);
+    showToast('⚠ Errore aggiornamento esito: ' + err.message + ' — riprova', true);
+  } finally {
+    scrittutePendenti--;
   }
 }
 
@@ -1743,6 +1790,7 @@ document.getElementById('btn-salva-settings').addEventListener('click', async ()
     showToast('⚠ Le percentuali devono essere comprese tra 0 e 100', true); return;
   }
 
+  scrittutePendenti++;
   try{
     const { error } = await sb.from('impostazioni').update({
       cassa_iniziale: nuovaCassa,
@@ -1764,6 +1812,8 @@ document.getElementById('btn-salva-settings').addEventListener('click', async ()
   } catch(err){
     console.error(err);
     showToast('⚠ Errore salvataggio impostazioni: ' + err.message, true);
+  } finally {
+    scrittutePendenti--;
   }
 });
 
